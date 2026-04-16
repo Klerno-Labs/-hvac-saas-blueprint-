@@ -10,7 +10,7 @@ function getResend(): Resend | null {
   return _resend
 }
 
-const FROM_EMAIL = process.env.EMAIL_FROM || 'HVAC SaaS <noreply@resend.dev>'
+const FROM_EMAIL = process.env.EMAIL_FROM || 'FieldClose <noreply@resend.dev>'
 
 type SendResult = { success: true; id: string } | { success: false; error: string }
 
@@ -116,7 +116,7 @@ export async function sendPasswordResetEmail(params: {
 }): Promise<SendResult> {
   return sendEmail({
     to: params.to,
-    subject: 'Reset your HVAC SaaS password',
+    subject: 'Reset your FieldClose password',
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
         <h2>Reset your password</h2>
@@ -139,11 +139,11 @@ export async function sendTeamInviteEmail(params: {
 }): Promise<SendResult> {
   return sendEmail({
     to: params.to,
-    subject: `You've been invited to ${params.orgName} on HVAC SaaS`,
+    subject: `You've been invited to ${params.orgName} on FieldClose`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
         <h2>You're invited!</h2>
-        <p>${params.inviterName} has invited you to join <strong>${params.orgName}</strong> on HVAC SaaS.</p>
+        <p>${params.inviterName} has invited you to join <strong>${params.orgName}</strong> on FieldClose.</p>
         <p><a href="${params.signupUrl}" style="display:inline-block;background:#0f766e;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Accept Invitation</a></p>
       </div>
     `,

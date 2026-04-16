@@ -34,7 +34,7 @@ export function NavHeader() {
             href="/dashboard"
             className="font-bold text-primary text-base no-underline mr-4 whitespace-nowrap"
           >
-            HVAC SaaS
+            FieldClose
           </Link>
           <Separator orientation="vertical" className="h-6 mr-2" />
           {NAV_ITEMS.map((item) => {

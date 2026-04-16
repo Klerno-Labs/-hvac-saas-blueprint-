@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: 'HVAC SaaS',
-  description: 'Quote-to-payment SaaS for residential HVAC shops',
+  title: 'FieldClose — Get Paid Faster on Every HVAC Job',
+  description: 'The quote-to-payment operating system for residential HVAC businesses. Estimates, invoices, payments, and collections in one workflow.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

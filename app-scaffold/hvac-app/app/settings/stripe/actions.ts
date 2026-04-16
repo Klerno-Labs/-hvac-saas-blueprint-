@@ -29,11 +29,19 @@ export async function startStripeOnboarding(): Promise<ConnectResult> {
   let accountId = org.stripeConnectedAccountId
 
   if (!accountId) {
-    const account = await stripe.accounts.create({
-      type: 'express',
-      metadata: { organizationId },
-    })
-    accountId = account.id
+    try {
+      const account = await stripe.accounts.create({
+        type: 'express',
+        metadata: { organizationId },
+      })
+      accountId = account.id
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to create Stripe account'
+      if (msg.includes('Connect')) {
+        return { success: false, error: 'Stripe Connect is not enabled on this platform account. Enable it at dashboard.stripe.com/connect' }
+      }
+      return { success: false, error: msg }
+    }
 
     await db.organization.update({
       where: { id: organizationId },
