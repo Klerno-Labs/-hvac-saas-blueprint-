@@ -2,6 +2,10 @@ import { requireAuth } from '@/lib/session'
 import { db } from '@/lib/db'
 import Link from 'next/link'
 import { ReminderStatusForm } from './status-form'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default async function RemindersPage() {
   const { organizationId } = await requireAuth()
@@ -21,22 +25,24 @@ export default async function RemindersPage() {
   const closedReminders = reminders.filter((r) => r.status !== 'open')
 
   return (
-    <main>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1>Reminders</h1>
-        <Link href="/reminders/new" className="button">New reminder</Link>
+    <main className="max-w-300 mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Reminders</h1>
+        <Link href="/reminders/new" className={cn(buttonVariants(), 'no-underline')}>New reminder</Link>
       </div>
 
       {reminders.length === 0 ? (
-        <div className="card">
-          <p className="muted">No reminders yet. Create one to track follow-ups.</p>
-        </div>
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">No reminders yet. Create one to track follow-ups.</p>
+          </CardContent>
+        </Card>
       ) : (
         <>
           {openReminders.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <h2 style={{ marginBottom: 12, fontSize: 16 }}>Open ({openReminders.length})</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="mb-8">
+              <h2 className="text-base font-semibold mb-3">Open ({openReminders.length})</h2>
+              <div className="space-y-2">
                 {openReminders.map((rem) => (
                   <ReminderCard key={rem.id} reminder={rem} />
                 ))}
@@ -46,10 +52,8 @@ export default async function RemindersPage() {
 
           {closedReminders.length > 0 && (
             <div>
-              <h2 style={{ marginBottom: 12, fontSize: 16 }} className="muted">
-                Resolved ({closedReminders.length})
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <h2 className="text-base font-semibold mb-3 text-muted-foreground">Resolved ({closedReminders.length})</h2>
+              <div className="space-y-2">
                 {closedReminders.map((rem) => (
                   <ReminderCard key={rem.id} reminder={rem} />
                 ))}
@@ -58,10 +62,6 @@ export default async function RemindersPage() {
           )}
         </>
       )}
-
-      <div style={{ marginTop: 16 }}>
-        <Link href="/dashboard" className="muted" style={{ fontSize: 13 }}>Back to dashboard</Link>
-      </div>
     </main>
   )
 }
@@ -85,81 +85,60 @@ function ReminderCard({ reminder }: { reminder: ReminderWithRelations }) {
   const isOverdue = isOpen && reminder.dueAt && new Date(reminder.dueAt) < new Date()
 
   return (
-    <div
-      className="card"
-      style={{
-        opacity: isOpen ? 1 : 0.6,
-        borderLeft: isOverdue ? '4px solid #d97706' : undefined,
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <strong>{reminder.title}</strong>
-            <span style={{
-              fontSize: 11,
-              padding: '1px 6px',
-              borderRadius: 4,
-              background: statusColor(reminder.status),
-              color: 'white',
-            }}>
-              {reminder.status}
-            </span>
-            {isOverdue && (
-              <span style={{ fontSize: 11, color: '#d97706', fontWeight: 600 }}>Overdue</span>
-            )}
+    <Card className={cn(
+      'transition-shadow',
+      !isOpen && 'opacity-60',
+      isOverdue && 'border-l-4 border-l-amber-500',
+    )}>
+      <CardContent className="py-4">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-semibold text-sm">{reminder.title}</span>
+              <Badge variant={reminder.status === 'open' ? 'outline' : reminder.status === 'completed' ? 'default' : 'secondary'}>
+                {reminder.status}
+              </Badge>
+              {isOverdue && <span className="text-xs text-amber-600 font-semibold">Overdue</span>}
+            </div>
+
+            <div className="flex gap-3 text-xs text-muted-foreground">
+              {reminder.dueAt && <span>Due: {new Date(reminder.dueAt).toLocaleDateString()}</span>}
+              <span>{reminder.reminderType.replace(/_/g, ' ')}</span>
+            </div>
+
+            {reminder.notes && <p className="text-sm mt-1">{reminder.notes}</p>}
+
+            <div className="flex gap-3 mt-2 text-xs">
+              {reminder.job && (
+                <Link href={`/jobs/${reminder.job.id}` as never} className="text-primary hover:underline">
+                  Job: {reminder.job.title}
+                </Link>
+              )}
+              {reminder.customer && (
+                <Link href={`/customers/${reminder.customer.id}` as never} className="text-primary hover:underline">
+                  {reminder.customer.firstName} {reminder.customer.lastName || ''}
+                </Link>
+              )}
+              {reminder.estimate && (
+                <Link href={`/estimates/${reminder.estimate.id}` as never} className="text-primary hover:underline">
+                  Est #{reminder.estimate.estimateNumber}
+                </Link>
+              )}
+              {reminder.invoice && (
+                <Link href={`/invoices/${reminder.invoice.id}` as never} className="text-primary hover:underline">
+                  Inv #{reminder.invoice.invoiceNumber}
+                </Link>
+              )}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 12, fontSize: 13 }} className="muted">
-            {reminder.dueAt && (
-              <span>Due: {new Date(reminder.dueAt).toLocaleDateString()}</span>
-            )}
-            <span>{reminder.reminderType.replace(/_/g, ' ')}</span>
-          </div>
-
-          {reminder.notes && (
-            <p style={{ fontSize: 13, marginTop: 4 }}>{reminder.notes}</p>
+          {isOpen && (
+            <div className="ml-3 shrink-0">
+              <ReminderStatusForm reminderId={reminder.id} />
+            </div>
           )}
-
-          <div style={{ display: 'flex', gap: 8, marginTop: 6, fontSize: 12 }}>
-            {reminder.job && (
-              <Link href={`/jobs/${reminder.job.id}` as never} style={{ color: 'var(--primary)' }}>
-                Job: {reminder.job.title}
-              </Link>
-            )}
-            {reminder.customer && (
-              <Link href={`/customers/${reminder.customer.id}` as never} style={{ color: 'var(--primary)' }}>
-                Customer: {reminder.customer.firstName} {reminder.customer.lastName || ''}
-              </Link>
-            )}
-            {reminder.estimate && (
-              <Link href={`/estimates/${reminder.estimate.id}` as never} style={{ color: 'var(--primary)' }}>
-                Estimate: #{reminder.estimate.estimateNumber}
-              </Link>
-            )}
-            {reminder.invoice && (
-              <Link href={`/invoices/${reminder.invoice.id}` as never} style={{ color: 'var(--primary)' }}>
-                Invoice: #{reminder.invoice.invoiceNumber}
-              </Link>
-            )}
-          </div>
         </div>
-
-        {isOpen && (
-          <div style={{ marginLeft: 12, flexShrink: 0 }}>
-            <ReminderStatusForm reminderId={reminder.id} />
-          </div>
-        )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
-}
-
-function statusColor(status: string): string {
-  switch (status) {
-    case 'open': return '#2563eb'
-    case 'completed': return '#059669'
-    case 'dismissed': return '#6b7280'
-    default: return '#6b7280'
-  }
 }

@@ -1,6 +1,8 @@
 import { requireAuth } from '@/lib/session'
 import { db } from '@/lib/db'
 import Link from 'next/link'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 export default async function InvoicesPage() {
   const { organizationId } = await requireAuth()
@@ -12,58 +14,46 @@ export default async function InvoicesPage() {
   })
 
   return (
-    <main>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1>Invoices</h1>
+    <main className="max-w-300 mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
       </div>
 
       {invoices.length === 0 ? (
-        <div className="card">
-          <p className="muted">No invoices yet. Create an invoice from a job detail page.</p>
-        </div>
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">No invoices yet. Create an invoice from a job detail page.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="space-y-2">
           {invoices.map((inv) => (
-            <Link
-              key={inv.id}
-              href={`/invoices/${inv.id}` as never}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <div className="card" style={{ cursor: 'pointer' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong>#{inv.invoiceNumber}</strong>
-                    <span className="muted" style={{ marginLeft: 8, fontSize: 13 }}>
-                      {inv.job.title} — {inv.customer.firstName} {inv.customer.lastName || ''}
-                    </span>
+            <Link key={inv.id} href={`/invoices/${inv.id}` as never} className="no-underline text-inherit">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="py-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-semibold">#{inv.invoiceNumber}</span>
+                      <span className="text-sm text-muted-foreground ml-2">
+                        {inv.job.title} — {inv.customer.firstName} {inv.customer.lastName || ''}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold">{formatCents(inv.totalCents)}</span>
+                      <Badge variant={invoiceVariant(inv.status)}>{inv.status}</Badge>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontWeight: 600 }}>{formatCents(inv.totalCents)}</span>
-                    <span style={{
-                      fontSize: 12,
-                      padding: '2px 8px',
-                      borderRadius: 6,
-                      background: invoiceStatusColor(inv.status),
-                      color: 'white',
-                    }}>
-                      {inv.status}
-                    </span>
-                  </div>
-                </div>
-                {inv.dueDate && (
-                  <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-                    Due: {new Date(inv.dueDate).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
+                  {inv.dueDate && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Due: {new Date(inv.dueDate).toLocaleDateString()}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>
       )}
-
-      <div style={{ marginTop: 16 }}>
-        <Link href="/dashboard" className="muted" style={{ fontSize: 13 }}>Back to dashboard</Link>
-      </div>
     </main>
   )
 }
@@ -72,13 +62,12 @@ function formatCents(cents: number): string {
   return '$' + (cents / 100).toFixed(2)
 }
 
-function invoiceStatusColor(status: string): string {
+function invoiceVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
-    case 'draft': return '#6b7280'
-    case 'sent': return '#2563eb'
-    case 'paid': return '#059669'
-    case 'void': return '#dc2626'
-    case 'overdue': return '#d97706'
-    default: return '#6b7280'
+    case 'paid': return 'default'
+    case 'void': return 'destructive'
+    case 'overdue': return 'destructive'
+    case 'sent': return 'outline'
+    default: return 'secondary'
   }
 }

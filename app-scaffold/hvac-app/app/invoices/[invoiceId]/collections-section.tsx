@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toggleCollectionsPause, dismissCollectionAttempt } from './collections-actions'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 type Attempt = {
   id: string
@@ -48,70 +50,51 @@ export function CollectionsSection({
   return (
     <div>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 12, fontSize: 14 }}>{error}</div>
+        <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">{error}</div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <div>
-          <span style={{ fontSize: 13 }} className="muted">Collections status: </span>
-          <span style={{
-            fontSize: 12,
-            padding: '2px 8px',
-            borderRadius: 4,
-            background: collectionsPaused ? '#fef3c7' : '#dcfce7',
-            color: collectionsPaused ? '#92400e' : '#166534',
-          }}>
+      <div className="flex justify-between items-center mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Collections status:</span>
+          <Badge variant={collectionsPaused ? 'outline' : 'secondary'} className={collectionsPaused ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-green-50 text-green-800 border-green-200'}>
             {collectionsPaused ? 'Paused' : 'Active'}
-          </span>
+          </Badge>
         </div>
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={handleTogglePause}
           disabled={loading}
-          style={{
-            fontSize: 13,
-            padding: '6px 12px',
-            background: 'none',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            cursor: 'pointer',
-            color: 'var(--text)',
-          }}
         >
           {loading ? '...' : collectionsPaused ? 'Resume collections' : 'Pause collections'}
-        </button>
+        </Button>
       </div>
 
       {attempts.length === 0 ? (
-        <p className="muted" style={{ fontSize: 13 }}>No collection attempts yet.</p>
+        <p className="text-xs text-muted-foreground">No collection attempts yet.</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className="flex flex-col gap-1.5">
           {attempts.map((a) => (
-            <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-              <div>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>{a.stage.replace(/_/g, ' ')}</span>
-                <span style={{
-                  marginLeft: 8,
-                  fontSize: 11,
-                  padding: '1px 6px',
-                  borderRadius: 4,
-                  background: attemptStatusColor(a.status).bg,
-                  color: attemptStatusColor(a.status).text,
-                }}>
+            <div key={a.id} className="flex justify-between items-center py-1.5 border-b border-border">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold">{a.stage.replace(/_/g, ' ')}</span>
+                <Badge variant={attemptBadgeVariant(a.status)} className={attemptBadgeClass(a.status)}>
                   {a.status}
-                </span>
-                {a.notes && <span className="muted" style={{ marginLeft: 8, fontSize: 12 }}>{a.notes}</span>}
+                </Badge>
+                {a.notes && <span className="text-xs text-muted-foreground">{a.notes}</span>}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span className="muted" style={{ fontSize: 12 }}>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
                   {new Date(a.createdAt).toLocaleDateString()}
                 </span>
                 {a.status === 'created' && (
-                  <button
+                  <Button
+                    variant="outline"
+                    size="xs"
                     onClick={() => handleDismiss(a.id)}
-                    style={{ fontSize: 11, padding: '2px 8px', background: 'none', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', color: 'var(--muted)' }}
                   >
                     Dismiss
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -122,12 +105,20 @@ export function CollectionsSection({
   )
 }
 
-function attemptStatusColor(status: string): { bg: string; text: string } {
+function attemptBadgeVariant(status: string): 'default' | 'secondary' | 'outline' {
   switch (status) {
-    case 'created': return { bg: '#dbeafe', text: '#1d4ed8' }
-    case 'sent': return { bg: '#dcfce7', text: '#166534' }
-    case 'skipped': return { bg: '#f3f4f6', text: '#374151' }
-    case 'dismissed': return { bg: '#f3f4f6', text: '#6b7280' }
-    default: return { bg: '#f3f4f6', text: '#374151' }
+    case 'created': return 'default'
+    case 'sent': return 'secondary'
+    default: return 'outline'
+  }
+}
+
+function attemptBadgeClass(status: string): string {
+  switch (status) {
+    case 'created': return 'bg-blue-100 text-blue-700 border-blue-200'
+    case 'sent': return 'bg-green-50 text-green-800 border-green-200'
+    case 'skipped': return 'bg-gray-100 text-gray-700 border-gray-200'
+    case 'dismissed': return 'bg-gray-100 text-gray-500 border-gray-200'
+    default: return 'bg-gray-100 text-gray-700 border-gray-200'
   }
 }

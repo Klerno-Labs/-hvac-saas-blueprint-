@@ -2,8 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createReminder } from './actions'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const REMINDER_TYPES = [
   { value: 'general', label: 'General' },
@@ -35,73 +39,53 @@ export default function NewReminderPage() {
   }
 
   return (
-    <main>
-      <div className="card" style={{ maxWidth: 540, margin: '0 auto' }}>
-        <h1>New reminder</h1>
-        <p className="muted">Create a follow-up reminder for your team.</p>
+    <main className="max-w-xl mx-auto px-4 py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>New reminder</CardTitle>
+          <CardDescription>Create a follow-up reminder for your team.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">{error}</div>
+          )}
 
-        {error && (
-          <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>{error}</div>
-        )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input id="title" name="title" required placeholder="e.g. Follow up with Smith on AC estimate" />
+            </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
-          <label>
-            <span style={labelStyle}>Title *</span>
-            <input
-              name="title"
-              type="text"
-              required
-              placeholder="e.g. Follow up with Smith on AC estimate"
-              style={inputStyle}
-            />
-          </label>
+            <div className="space-y-2">
+              <Label htmlFor="reminderType">Type</Label>
+              <select name="reminderType" id="reminderType" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs">
+                {REMINDER_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
 
-          <label>
-            <span style={labelStyle}>Type</span>
-            <select name="reminderType" style={inputStyle}>
-              {REMINDER_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </label>
+            <div className="space-y-2">
+              <Label htmlFor="dueAt">Due date</Label>
+              <Input id="dueAt" name="dueAt" type="date" />
+            </div>
 
-          <label>
-            <span style={labelStyle}>Due date</span>
-            <input name="dueAt" type="date" style={inputStyle} />
-          </label>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" name="notes" rows={3} placeholder="Additional context..." />
+            </div>
 
-          <label>
-            <span style={labelStyle}>Notes</span>
-            <textarea
-              name="notes"
-              rows={3}
-              placeholder="Additional context..."
-              style={{ ...inputStyle, resize: 'vertical' }}
-            />
-          </label>
-
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-            <button type="submit" className="button" disabled={loading} style={{ textAlign: 'center' }}>
-              {loading ? 'Creating...' : 'Create reminder'}
-            </button>
-            <Link href="/reminders" style={{ padding: '10px 16px', fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>
-              Cancel
-            </Link>
-          </div>
-        </form>
-      </div>
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Creating...' : 'Create reminder'}
+              </Button>
+              <Button variant="ghost" type="button" onClick={() => router.push('/reminders')}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   )
-}
-
-const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 500 }
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

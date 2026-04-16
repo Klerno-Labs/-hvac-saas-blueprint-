@@ -2,6 +2,7 @@ import { requireAuth } from '@/lib/session'
 import { db } from '@/lib/db'
 import { notFound, redirect } from 'next/navigation'
 import { EstimateForm } from './form'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 
 export default async function NewEstimatePage({ searchParams }: { searchParams: Promise<{ jobId?: string }> }) {
   const { organizationId } = await requireAuth()
@@ -21,17 +22,21 @@ export default async function NewEstimatePage({ searchParams }: { searchParams: 
   }
 
   return (
-    <main>
-      <div className="card" style={{ maxWidth: 700, margin: '0 auto' }}>
-        <h1>New estimate</h1>
-        <p className="muted">
-          For job: <strong>{job.title}</strong> — {job.customer.firstName} {job.customer.lastName || ''}
-        </p>
-        <EstimateForm
-          jobId={job.id}
-          jobTitle={job.title}
-        />
-      </div>
+    <main className="max-w-300 mx-auto px-4 py-8">
+      <Card className="max-w-175 mx-auto">
+        <CardHeader>
+          <CardTitle className="text-xl">New estimate</CardTitle>
+          <CardDescription>
+            For job: <strong>{job.title}</strong> — {job.customer.firstName} {job.customer.lastName || ''}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <EstimateForm
+            jobId={job.id}
+            jobTitle={job.title}
+          />
+        </CardContent>
+      </Card>
     </main>
   )
 }

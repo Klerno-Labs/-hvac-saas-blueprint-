@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateEstimateStatus } from './actions'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
 const STATUSES = [
   { value: 'draft', label: 'Draft' },
@@ -35,31 +37,25 @@ export function EstimateStatusForm({ estimateId, currentStatus }: { estimateId: 
   return (
     <>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 12, fontSize: 14 }}>{error}</div>
+        <div className="text-destructive text-sm mb-3">{error}</div>
       )}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginTop: 8 }}>
-        <label style={{ flex: 1 }}>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Status</span>
-          <select name="status" defaultValue={currentStatus} style={inputStyle}>
+      <form onSubmit={handleSubmit} className="flex gap-3 items-end mt-2">
+        <div className="flex-1">
+          <Label className="text-sm font-medium">Status</Label>
+          <select
+            name="status"
+            defaultValue={currentStatus}
+            className="mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          >
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
-        </label>
-        <button type="submit" className="button" disabled={loading} style={{ textAlign: 'center' }}>
+        </div>
+        <Button type="submit" disabled={loading}>
           {loading ? 'Updating...' : 'Update'}
-        </button>
+        </Button>
       </form>
     </>
   )
-}
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

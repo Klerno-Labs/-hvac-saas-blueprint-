@@ -37,6 +37,12 @@ export async function POST(req: Request) {
         await handlePaymentFailed(event.data.object as Stripe.PaymentIntent)
         break
 
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted':
+        await handleSubscriptionChange(event.data.object as Stripe.Subscription)
+        break
+
       case 'account.updated':
         await handleAccountUpdated(event.data.object as Stripe.Account)
         break
@@ -230,5 +236,44 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
     entityType: 'invoice',
     entityId: invoiceId,
     metadataJson: { reason: 'payment_intent_failed', paymentIntentId: paymentIntent.id },
+  })
+}
+
+async function handleSubscriptionChange(subscription: Stripe.Subscription) {
+  const organizationId = subscription.metadata?.organizationId
+  if (!organizationId) return
+
+  const org = await db.organization.findUnique({ where: { id: organizationId } })
+  if (!org) return
+
+  const statusMap: Record<string, string> = {
+    active: 'active',
+    trialing: 'trialing',
+    past_due: 'past_due',
+    canceled: 'canceled',
+    unpaid: 'unpaid',
+    incomplete: 'incomplete',
+  }
+
+  const newStatus = statusMap[subscription.status] || subscription.status
+  const planId = subscription.metadata?.planId || org.subscriptionPlan
+
+  await db.organization.update({
+    where: { id: organizationId },
+    data: {
+      subscriptionStatus: newStatus,
+      subscriptionPlan: planId,
+      subscriptionStripeId: typeof subscription.customer === 'string'
+        ? subscription.customer
+        : subscription.customer?.id || org.subscriptionStripeId,
+    },
+  })
+
+  await trackEvent({
+    organizationId,
+    eventName: 'subscription_updated',
+    entityType: 'organization',
+    entityId: organizationId,
+    metadataJson: { status: newStatus, plan: planId },
   })
 }

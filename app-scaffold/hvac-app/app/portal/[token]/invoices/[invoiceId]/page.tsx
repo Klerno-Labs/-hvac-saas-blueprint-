@@ -4,6 +4,12 @@ import { trackEvent } from '@/lib/events'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { PortalPayButton } from './portal-pay-button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default async function PortalInvoiceDetailPage({
   params,
@@ -59,111 +65,113 @@ export default async function PortalInvoiceDetailPage({
 
   return (
     <main>
-      <div style={{ maxWidth: 700, margin: '0 auto' }}>
-        <div style={{ marginBottom: 20 }}>
-          <Link href={`/portal/${token}` as never} className="muted" style={{ fontSize: 13 }}>
+      <div className="mx-auto max-w-175">
+        <div className="mb-5">
+          <Link href={`/portal/${token}` as never} className="text-xs text-muted-foreground hover:underline">
             &larr; Back to portal
           </Link>
         </div>
 
-        <div className="card" style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <h1>Invoice #{invoice.invoiceNumber}</h1>
-              <p className="muted">From {ctx.organizationName} — {invoice.job.title}</p>
+        <Card className="mb-4">
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-2xl font-bold">Invoice #{invoice.invoiceNumber}</CardTitle>
+                <CardDescription>From {ctx.organizationName} — {invoice.job.title}</CardDescription>
+              </div>
+              <Badge
+                variant="secondary"
+                className={cn(statusClasses(invoice.status))}
+              >
+                {customerFriendlyStatus(invoice.status)}
+              </Badge>
             </div>
-            <span style={{
-              fontSize: 12,
-              padding: '4px 10px',
-              borderRadius: 6,
-              background: statusBg(invoice.status),
-              color: statusFg(invoice.status),
-            }}>
-              {customerFriendlyStatus(invoice.status)}
-            </span>
-          </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Subtotal</p>
+                <p>{formatCents(invoice.subtotalCents)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Tax</p>
+                <p>{formatCents(invoice.taxCents)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="font-bold">{formatCents(invoice.totalCents)}</p>
+              </div>
+            </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginTop: 20 }}>
-            <div>
-              <p style={{ fontSize: 13 }} className="muted">Subtotal</p>
-              <p>{formatCents(invoice.subtotalCents)}</p>
-            </div>
-            <div>
-              <p style={{ fontSize: 13 }} className="muted">Tax</p>
-              <p>{formatCents(invoice.taxCents)}</p>
-            </div>
-            <div>
-              <p style={{ fontSize: 13 }} className="muted">Total</p>
-              <p style={{ fontWeight: 700 }}>{formatCents(invoice.totalCents)}</p>
-            </div>
-          </div>
-
-          {invoice.outstandingCents > 0 && (
-            <div style={{ marginTop: 16, padding: '12px 16px', background: '#fef3c7', borderRadius: 8 }}>
-              <span style={{ fontWeight: 700, color: '#92400e' }}>
-                Amount due: {formatCents(invoice.outstandingCents)}
-              </span>
-              {invoice.dueDate && (
-                <span className="muted" style={{ marginLeft: 12, fontSize: 13 }}>
-                  Due {new Date(invoice.dueDate).toLocaleDateString()}
+            {invoice.outstandingCents > 0 && (
+              <div className="rounded-lg bg-amber-50 px-4 py-3">
+                <span className="font-bold text-amber-800">
+                  Amount due: {formatCents(invoice.outstandingCents)}
                 </span>
-              )}
-            </div>
-          )}
+                {invoice.dueDate && (
+                  <span className="ml-3 text-xs text-muted-foreground">
+                    Due {new Date(invoice.dueDate).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            )}
 
-          {invoice.status === 'paid' && invoice.paidAt && (
-            <div style={{ marginTop: 16, padding: '12px 16px', background: '#dcfce7', borderRadius: 8 }}>
-              <span style={{ fontWeight: 700, color: '#166534' }}>
-                Paid on {new Date(invoice.paidAt).toLocaleDateString()}
-              </span>
-            </div>
-          )}
+            {invoice.status === 'paid' && invoice.paidAt && (
+              <div className="rounded-lg bg-green-50 px-4 py-3">
+                <span className="font-bold text-green-800">
+                  Paid on {new Date(invoice.paidAt).toLocaleDateString()}
+                </span>
+              </div>
+            )}
 
-          {invoice.descriptionOfWork && (
-            <div style={{ marginTop: 16 }}>
-              <p style={{ fontSize: 13 }} className="muted">Description of work</p>
-              <p style={{ whiteSpace: 'pre-wrap' }}>{invoice.descriptionOfWork}</p>
-            </div>
-          )}
+            {invoice.descriptionOfWork && (
+              <div>
+                <p className="text-xs text-muted-foreground">Description of work</p>
+                <p className="whitespace-pre-wrap">{invoice.descriptionOfWork}</p>
+              </div>
+            )}
 
-          {invoice.lineItems.length > 0 && (
-            <div style={{ marginTop: 16 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <th style={thStyle}>Item</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Qty</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Price</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
+            {invoice.lineItems.length > 0 && (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs font-semibold text-muted-foreground">Item</TableHead>
+                    <TableHead className="text-right text-xs font-semibold text-muted-foreground">Qty</TableHead>
+                    <TableHead className="text-right text-xs font-semibold text-muted-foreground">Price</TableHead>
+                    <TableHead className="text-right text-xs font-semibold text-muted-foreground">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {invoice.lineItems.map((li) => (
-                    <tr key={li.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={tdStyle}>
+                    <TableRow key={li.id}>
+                      <TableCell>
                         <strong>{li.name}</strong>
                         {li.description && <br />}
-                        {li.description && <span className="muted" style={{ fontSize: 13 }}>{li.description}</span>}
-                      </td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>{li.quantity}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>{formatCents(li.unitPriceCents)}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>{formatCents(li.lineTotalCents)}</td>
-                    </tr>
+                        {li.description && <span className="text-xs text-muted-foreground">{li.description}</span>}
+                      </TableCell>
+                      <TableCell className="text-right">{li.quantity}</TableCell>
+                      <TableCell className="text-right">{formatCents(li.unitPriceCents)}</TableCell>
+                      <TableCell className="text-right">{formatCents(li.lineTotalCents)}</TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
 
         {canPay && (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <h3>Pay this invoice</h3>
-            <p className="muted" style={{ marginBottom: 16, fontSize: 13 }}>
-              Secure payment powered by Stripe
-            </p>
-            <PortalPayButton token={token} invoiceId={invoice.id} />
-          </div>
+          <Card className="text-center">
+            <CardHeader>
+              <CardTitle>Pay this invoice</CardTitle>
+              <CardDescription>
+                Secure payment powered by Stripe
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PortalPayButton token={token} invoiceId={invoice.id} />
+            </CardContent>
+          </Card>
         )}
       </div>
     </main>
@@ -184,25 +192,12 @@ function customerFriendlyStatus(status: string): string {
   }
 }
 
-function statusBg(status: string): string {
+function statusClasses(status: string): string {
   switch (status) {
-    case 'sent': return '#dbeafe'
-    case 'overdue': return '#fef3c7'
-    case 'paid': return '#dcfce7'
-    case 'void': return '#f3f4f6'
-    default: return '#f3f4f6'
+    case 'sent': return 'bg-blue-100 text-blue-700'
+    case 'overdue': return 'bg-amber-100 text-amber-800'
+    case 'paid': return 'bg-green-100 text-green-800'
+    case 'void': return 'bg-gray-100 text-gray-700'
+    default: return 'bg-gray-100 text-gray-700'
   }
 }
-
-function statusFg(status: string): string {
-  switch (status) {
-    case 'sent': return '#1d4ed8'
-    case 'overdue': return '#92400e'
-    case 'paid': return '#166534'
-    case 'void': return '#374151'
-    default: return '#374151'
-  }
-}
-
-const thStyle: React.CSSProperties = { padding: '8px 4px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--muted)' }
-const tdStyle: React.CSSProperties = { padding: '8px 4px' }

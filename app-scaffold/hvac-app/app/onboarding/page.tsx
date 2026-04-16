@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import { OnboardingForm } from './form'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function OnboardingPage() {
   const session = await auth()
@@ -10,7 +11,6 @@ export default async function OnboardingPage() {
     redirect('/login')
   }
 
-  // If user already has an org, send them to dashboard
   const membership = await db.organizationMember.findFirst({
     where: { userId: session.user.id },
   })
@@ -19,12 +19,16 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <main>
-      <div className="card" style={{ maxWidth: 480, margin: '60px auto' }}>
-        <h1>Set up your business</h1>
-        <p className="muted">Tell us about your HVAC company to get started.</p>
-        <OnboardingForm />
-      </div>
+    <main className="flex items-center justify-center min-h-screen p-4">
+      <Card className="w-full max-w-lg">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Set up your business</CardTitle>
+          <CardDescription>Tell us about your HVAC company to get started.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <OnboardingForm />
+        </CardContent>
+      </Card>
     </main>
   )
 }

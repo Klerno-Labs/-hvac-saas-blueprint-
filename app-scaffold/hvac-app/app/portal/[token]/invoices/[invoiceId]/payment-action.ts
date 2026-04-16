@@ -89,11 +89,16 @@ export async function createPortalCheckoutSession(
     })
   }
 
+  // Calculate platform fee
+  const feePercent = org.platformFeePercent || 2.9
+  const applicationFeeAmount = Math.round(invoice.totalCents * (feePercent / 100))
+
   const checkoutSession = await stripe.checkout.sessions.create(
     {
       mode: 'payment',
       line_items: lineItems,
       payment_intent_data: {
+        application_fee_amount: applicationFeeAmount > 0 ? applicationFeeAmount : undefined,
         metadata: {
           invoiceId: invoice.id,
           organizationId: ctx.organizationId,

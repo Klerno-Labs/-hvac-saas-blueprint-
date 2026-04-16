@@ -2,6 +2,7 @@ import { requireAuth } from '@/lib/session'
 import { db } from '@/lib/db'
 import { notFound, redirect } from 'next/navigation'
 import { InvoiceForm } from './form'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 export default async function NewInvoicePage({ searchParams }: { searchParams: Promise<{ jobId?: string }> }) {
   const { organizationId } = await requireAuth()
@@ -43,32 +44,36 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: P
 
   return (
     <main>
-      <div className="card" style={{ maxWidth: 700, margin: '0 auto' }}>
-        <h1>New invoice</h1>
-        <p className="muted">
-          For job: <strong>{job.title}</strong> — {job.customer.firstName} {job.customer.lastName || ''}
-        </p>
-        {acceptedEstimate && (
-          <p style={{ fontSize: 13, color: '#059669', marginTop: 4 }}>
-            Seeded from accepted estimate #{acceptedEstimate.estimateNumber}
-          </p>
-        )}
-        {job.workSummary && !acceptedEstimate && (
-          <p style={{ fontSize: 13, color: '#2563eb', marginTop: 4 }}>
-            Seeded from proof of work summary
-          </p>
-        )}
-        <InvoiceForm
-          jobId={job.id}
-          initialData={{
-            descriptionOfWork: seedDescription,
-            notes: '',
-            taxCents: seedTaxCents,
-            dueDate: '',
-            lineItems: seedLineItems,
-          }}
-        />
-      </div>
+      <Card className="mx-auto max-w-175">
+        <CardHeader>
+          <CardTitle>New invoice</CardTitle>
+          <CardDescription>
+            For job: <strong>{job.title}</strong> — {job.customer.firstName} {job.customer.lastName || ''}
+          </CardDescription>
+          {acceptedEstimate && (
+            <p className="mt-1 text-xs text-emerald-600">
+              Seeded from accepted estimate #{acceptedEstimate.estimateNumber}
+            </p>
+          )}
+          {job.workSummary && !acceptedEstimate && (
+            <p className="mt-1 text-xs text-blue-600">
+              Seeded from proof of work summary
+            </p>
+          )}
+        </CardHeader>
+        <CardContent>
+          <InvoiceForm
+            jobId={job.id}
+            initialData={{
+              descriptionOfWork: seedDescription,
+              notes: '',
+              taxCents: seedTaxCents,
+              dueDate: '',
+              lineItems: seedLineItems,
+            }}
+          />
+        </CardContent>
+      </Card>
     </main>
   )
 }

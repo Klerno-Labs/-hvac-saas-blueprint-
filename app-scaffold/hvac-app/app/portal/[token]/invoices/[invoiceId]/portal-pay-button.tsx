@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createPortalCheckoutSession } from './payment-action'
+import { Button } from '@/components/ui/button'
 
 export function PortalPayButton({ token, invoiceId }: { token: string; invoiceId: string }) {
   const [loading, setLoading] = useState(false)
@@ -24,16 +25,16 @@ export function PortalPayButton({ token, invoiceId }: { token: string; invoiceId
   return (
     <div>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 12, fontSize: 14 }}>{error}</div>
+        <div className="text-destructive mb-3 text-sm">{error}</div>
       )}
-      <button
+      <Button
         onClick={handlePay}
         disabled={loading}
-        className="button"
-        style={{ textAlign: 'center', background: '#059669', fontSize: 16, padding: '12px 24px' }}
+        size="lg"
+        className="bg-emerald-600 hover:bg-emerald-700 text-base px-6 py-3 h-auto"
       >
         {loading ? 'Redirecting to payment...' : 'Pay now'}
-      </button>
+      </Button>
     </div>
   )
 }

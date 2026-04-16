@@ -3,6 +3,9 @@ import { db } from '@/lib/db'
 import { trackEvent } from '@/lib/events'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 export default async function PortalDashboardPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
@@ -46,104 +49,118 @@ export default async function PortalDashboardPage({ params }: { params: Promise<
 
   return (
     <main>
-      <div style={{ maxWidth: 700, margin: '0 auto' }}>
-        <div className="card" style={{ marginBottom: 24, textAlign: 'center' }}>
-          <h1>Welcome, {ctx.customerName}</h1>
-          <p className="muted">{ctx.organizationName}</p>
-        </div>
+      <div className="mx-auto max-w-175">
+        <Card className="mb-6 text-center">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Welcome, {ctx.customerName}</CardTitle>
+            <CardDescription>{ctx.organizationName}</CardDescription>
+          </CardHeader>
+        </Card>
 
         {outstandingInvoices.length > 0 && (
-          <div className="card" style={{ marginBottom: 16, borderLeft: '4px solid #d97706' }}>
-            <h2 style={{ marginBottom: 12 }}>Payment needed</h2>
-            {outstandingInvoices.map((inv) => (
-              <Link
-                key={inv.id}
-                href={`/portal/${token}/invoices/${inv.id}` as never}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                  <div>
-                    <strong>#{inv.invoiceNumber}</strong>
-                    <span className="muted" style={{ marginLeft: 8, fontSize: 13 }}>{inv.job.title}</span>
+          <Card className="mb-4 border-l-4 border-l-amber-600">
+            <CardHeader>
+              <CardTitle>Payment needed</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {outstandingInvoices.map((inv) => (
+                <Link
+                  key={inv.id}
+                  href={`/portal/${token}/invoices/${inv.id}` as never}
+                  className="no-underline text-inherit"
+                >
+                  <div className="flex justify-between py-2 border-b border-border cursor-pointer">
+                    <div>
+                      <strong>#{inv.invoiceNumber}</strong>
+                      <span className="ml-2 text-xs text-muted-foreground">{inv.job.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-amber-600">{formatCents(inv.outstandingCents)}</span>
+                      {inv.dueDate && (
+                        <span className="text-xs text-muted-foreground">
+                          Due {new Date(inv.dueDate).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontWeight: 600, color: '#d97706' }}>{formatCents(inv.outstandingCents)}</span>
-                    {inv.dueDate && (
-                      <span className="muted" style={{ fontSize: 12 }}>
-                        Due {new Date(inv.dueDate).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
         )}
 
-        <div className="card" style={{ marginBottom: 16 }}>
-          <h2 style={{ marginBottom: 12 }}>Invoices</h2>
-          {invoices.length === 0 ? (
-            <p className="muted">No invoices yet.</p>
-          ) : (
-            invoices.map((inv) => (
-              <Link
-                key={inv.id}
-                href={`/portal/${token}/invoices/${inv.id}` as never}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                  <div>
-                    <strong>#{inv.invoiceNumber}</strong>
-                    <span className="muted" style={{ marginLeft: 8, fontSize: 13 }}>{inv.job.title}</span>
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Invoices</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {invoices.length === 0 ? (
+              <p className="text-muted-foreground">No invoices yet.</p>
+            ) : (
+              invoices.map((inv) => (
+                <Link
+                  key={inv.id}
+                  href={`/portal/${token}/invoices/${inv.id}` as never}
+                  className="no-underline text-inherit"
+                >
+                  <div className="flex justify-between py-2 border-b border-border cursor-pointer">
+                    <div>
+                      <strong>#{inv.invoiceNumber}</strong>
+                      <span className="ml-2 text-xs text-muted-foreground">{inv.job.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{formatCents(inv.totalCents)}</span>
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          'text-[11px]',
+                          invoiceStatusClasses(inv.status),
+                        )}
+                      >
+                        {customerFriendlyStatus(inv.status)}
+                      </Badge>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontWeight: 600 }}>{formatCents(inv.totalCents)}</span>
-                    <span style={{
-                      fontSize: 11,
-                      padding: '1px 6px',
-                      borderRadius: 4,
-                      background: invoiceStatusBg(inv.status),
-                      color: invoiceStatusFg(inv.status),
-                    }}>
-                      {customerFriendlyStatus(inv.status)}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))
-          )}
-        </div>
+                </Link>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
         {estimates.length > 0 && (
-          <div className="card" style={{ marginBottom: 16 }}>
-            <h2 style={{ marginBottom: 12 }}>Estimates</h2>
-            {estimates.map((est) => (
-              <Link
-                key={est.id}
-                href={`/portal/${token}/estimates/${est.id}` as never}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                  <div>
-                    <strong>#{est.estimateNumber}</strong>
-                    <span className="muted" style={{ marginLeft: 8, fontSize: 13 }}>{est.job.title}</span>
+          <Card className="mb-4">
+            <CardHeader>
+              <CardTitle>Estimates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {estimates.map((est) => (
+                <Link
+                  key={est.id}
+                  href={`/portal/${token}/estimates/${est.id}` as never}
+                  className="no-underline text-inherit"
+                >
+                  <div className="flex justify-between py-2 border-b border-border cursor-pointer">
+                    <div>
+                      <strong>#{est.estimateNumber}</strong>
+                      <span className="ml-2 text-xs text-muted-foreground">{est.job.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{formatCents(est.totalCents)}</span>
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          'text-[11px]',
+                          estimateStatusClasses(est.status),
+                        )}
+                      >
+                        {est.status}
+                      </Badge>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontWeight: 600 }}>{formatCents(est.totalCents)}</span>
-                    <span style={{
-                      fontSize: 11,
-                      padding: '1px 6px',
-                      borderRadius: 4,
-                      background: est.status === 'accepted' ? '#dcfce7' : est.status === 'declined' ? '#fef2f2' : '#dbeafe',
-                      color: est.status === 'accepted' ? '#166534' : est.status === 'declined' ? '#991b1b' : '#1d4ed8',
-                    }}>
-                      {est.status}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
         )}
       </div>
     </main>
@@ -164,22 +181,20 @@ function customerFriendlyStatus(status: string): string {
   }
 }
 
-function invoiceStatusBg(status: string): string {
+function invoiceStatusClasses(status: string): string {
   switch (status) {
-    case 'sent': return '#dbeafe'
-    case 'overdue': return '#fef3c7'
-    case 'paid': return '#dcfce7'
-    case 'void': return '#f3f4f6'
-    default: return '#f3f4f6'
+    case 'sent': return 'bg-blue-100 text-blue-700'
+    case 'overdue': return 'bg-amber-100 text-amber-800'
+    case 'paid': return 'bg-green-100 text-green-800'
+    case 'void': return 'bg-gray-100 text-gray-700'
+    default: return 'bg-gray-100 text-gray-700'
   }
 }
 
-function invoiceStatusFg(status: string): string {
+function estimateStatusClasses(status: string): string {
   switch (status) {
-    case 'sent': return '#1d4ed8'
-    case 'overdue': return '#92400e'
-    case 'paid': return '#166534'
-    case 'void': return '#374151'
-    default: return '#374151'
+    case 'accepted': return 'bg-green-100 text-green-800'
+    case 'declined': return 'bg-red-50 text-red-800'
+    default: return 'bg-blue-100 text-blue-700'
   }
 }

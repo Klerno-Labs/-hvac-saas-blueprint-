@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createInvoice } from './actions'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 type LineItem = {
   name: string
@@ -79,84 +83,80 @@ export function InvoiceForm({ jobId, initialData }: { jobId: string; initialData
   return (
     <>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>{error}</div>
+        <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
-        <label>
-          <span style={labelStyle}>Description of work *</span>
-          <textarea
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-4">
+        <div className="space-y-1.5">
+          <Label>Description of work *</Label>
+          <Textarea
             value={descriptionOfWork}
             onChange={(e) => setDescriptionOfWork(e.target.value)}
             required
             rows={4}
-            style={{ ...inputStyle, resize: 'vertical' }}
+            className="resize-y"
           />
-        </label>
+        </div>
 
-        <div style={{ marginTop: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={labelStyle}>Line items *</span>
-            <button type="button" onClick={addLineItem} style={{ fontSize: 13, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <div className="mt-2">
+          <div className="flex justify-between items-center mb-2">
+            <Label>Line items *</Label>
+            <button type="button" onClick={addLineItem} className="text-xs text-primary bg-transparent border-none cursor-pointer">
               + Add item
             </button>
           </div>
 
           {lineItems.map((li, i) => (
-            <div key={i} style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 12, marginBottom: 8 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <input
+            <div key={i} className="border border-input rounded-lg p-3 mb-2">
+              <div className="grid grid-cols-[1fr_auto] gap-2 items-start">
+                <div className="flex flex-col gap-2">
+                  <Input
                     placeholder="Item name"
                     value={li.name}
                     onChange={(e) => updateLineItem(i, 'name', e.target.value)}
                     required
-                    style={inputStyle}
                   />
-                  <input
+                  <Input
                     placeholder="Description (optional)"
                     value={li.description}
                     onChange={(e) => updateLineItem(i, 'description', e.target.value)}
-                    style={inputStyle}
                   />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                    <label>
-                      <span style={{ fontSize: 12 }} className="muted">Qty</span>
-                      <input
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Qty</Label>
+                      <Input
                         type="number"
                         min={1}
                         value={li.quantity}
                         onChange={(e) => updateLineItem(i, 'quantity', parseInt(e.target.value) || 1)}
-                        style={inputStyle}
                       />
-                    </label>
-                    <label>
-                      <span style={{ fontSize: 12 }} className="muted">Unit price ($)</span>
-                      <input
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Unit price ($)</Label>
+                      <Input
                         type="number"
                         min={0}
                         step="0.01"
                         value={(li.unitPriceCents / 100).toFixed(2)}
                         onChange={(e) => updateLineItem(i, 'unitPriceCents', Math.round(parseFloat(e.target.value || '0') * 100))}
-                        style={inputStyle}
                       />
-                    </label>
-                    <label>
-                      <span style={{ fontSize: 12 }} className="muted">Line total</span>
-                      <input
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Line total</Label>
+                      <Input
                         type="text"
                         readOnly
                         value={formatCents(li.quantity * li.unitPriceCents)}
-                        style={{ ...inputStyle, background: '#f9fafb' }}
+                        className="bg-muted"
                       />
-                    </label>
+                    </div>
                   </div>
                 </div>
                 {lineItems.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeLineItem(i)}
-                    style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 18, padding: '0 4px' }}
+                    className="bg-transparent border-none text-destructive cursor-pointer text-lg px-1"
                     title="Remove item"
                   >
                     &times;
@@ -167,68 +167,54 @@ export function InvoiceForm({ jobId, initialData }: { jobId: string; initialData
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <label>
-            <span style={labelStyle}>Tax ($)</span>
-            <input
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label>Tax ($)</Label>
+            <Input
               type="number"
               min={0}
               step="0.01"
               value={(taxCents / 100).toFixed(2)}
               onChange={(e) => setTaxCents(Math.round(parseFloat(e.target.value || '0') * 100))}
-              style={inputStyle}
             />
-          </label>
+          </div>
           <div>
-            <span style={labelStyle}>Total</span>
-            <p style={{ fontSize: 20, fontWeight: 700, marginTop: 4 }}>{formatCents(totalCents)}</p>
+            <Label>Total</Label>
+            <p className="text-xl font-bold mt-1">{formatCents(totalCents)}</p>
           </div>
         </div>
 
-        <label>
-          <span style={labelStyle}>Due date</span>
-          <input
+        <div className="space-y-1.5">
+          <Label>Due date</Label>
+          <Input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            style={inputStyle}
           />
-        </label>
+        </div>
 
-        <label>
-          <span style={labelStyle}>Notes</span>
-          <textarea
+        <div className="space-y-1.5">
+          <Label>Notes</Label>
+          <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Additional notes for the customer"
-            style={{ ...inputStyle, resize: 'vertical' }}
+            className="resize-y"
           />
-        </label>
+        </div>
 
-        <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-          <button type="submit" className="button" disabled={loading} style={{ textAlign: 'center' }}>
+        <div className="flex gap-3 mt-2">
+          <Button type="submit" disabled={loading}>
             {loading ? 'Saving...' : 'Create invoice'}
-          </button>
-          <Link href={`/jobs/${jobId}` as never} style={{ padding: '10px 16px', fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>
+          </Button>
+          <Link href={`/jobs/${jobId}` as never} className={buttonVariants({ variant: 'ghost' })}>
             Cancel
           </Link>
         </div>
       </form>
     </>
   )
-}
-
-const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 500 }
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }
 
 function formatCents(cents: number): string {

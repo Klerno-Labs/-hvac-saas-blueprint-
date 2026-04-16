@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { EstimateStatusForm } from './status-form'
 import { EstimateEditForm } from './edit-form'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 export default async function EstimateDetailPage({ params }: { params: Promise<{ estimateId: string }> }) {
   const { organizationId } = await requireAuth()
@@ -24,137 +26,142 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
   const isDraft = estimate.status === 'draft'
 
   return (
-    <main>
-      <div style={{ marginBottom: 20 }}>
-        <Link href="/estimates" className="muted" style={{ fontSize: 13 }}>
+    <main className="max-w-300 mx-auto px-4 py-8">
+      <div className="mb-5">
+        <Link href="/estimates" className="text-xs text-muted-foreground hover:underline">
           &larr; All estimates
         </Link>
       </div>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h1>Estimate #{estimate.estimateNumber}</h1>
-            <p className="muted">
-              Job:{' '}
-              <Link href={`/jobs/${estimate.jobId}` as never} style={{ color: 'var(--primary)' }}>
-                {estimate.job.title}
-              </Link>
-              {' '}— {estimate.job.customer.firstName} {estimate.job.customer.lastName || ''}
-            </p>
+      <Card className="mb-4">
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-xl">Estimate #{estimate.estimateNumber}</CardTitle>
+              <CardDescription>
+                Job:{' '}
+                <Link href={`/jobs/${estimate.jobId}` as never} className="text-primary hover:underline">
+                  {estimate.job.title}
+                </Link>
+                {' '}— {estimate.job.customer.firstName} {estimate.job.customer.lastName || ''}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              {estimate.aiDraftUsed && (
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                  AI draft
+                </Badge>
+              )}
+              <Badge className={estimateStatusClass(estimate.status)}>
+                {estimate.status}
+              </Badge>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {estimate.aiDraftUsed && (
-              <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, background: '#dbeafe', color: '#1d4ed8' }}>
-                AI draft
-              </span>
-            )}
-            <span style={{
-              fontSize: 12,
-              padding: '4px 10px',
-              borderRadius: 6,
-              background: estimateStatusColor(estimate.status),
-              color: 'white',
-            }}>
-              {estimate.status}
-            </span>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Subtotal</p>
+              <p>{formatCents(estimate.subtotalCents)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Tax</p>
+              <p>{formatCents(estimate.taxCents)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="font-bold">{formatCents(estimate.totalCents)}</p>
+            </div>
           </div>
-        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginTop: 20 }}>
-          <div>
-            <p style={{ fontSize: 13 }} className="muted">Subtotal</p>
-            <p>{formatCents(estimate.subtotalCents)}</p>
-          </div>
-          <div>
-            <p style={{ fontSize: 13 }} className="muted">Tax</p>
-            <p>{formatCents(estimate.taxCents)}</p>
-          </div>
-          <div>
-            <p style={{ fontSize: 13 }} className="muted">Total</p>
-            <p style={{ fontWeight: 700 }}>{formatCents(estimate.totalCents)}</p>
-          </div>
-        </div>
+          {estimate.scopeOfWork && (
+            <div className="mt-4">
+              <p className="text-xs text-muted-foreground">Scope of work</p>
+              <p className="whitespace-pre-wrap">{estimate.scopeOfWork}</p>
+            </div>
+          )}
 
-        {estimate.scopeOfWork && (
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontSize: 13 }} className="muted">Scope of work</p>
-            <p style={{ whiteSpace: 'pre-wrap' }}>{estimate.scopeOfWork}</p>
-          </div>
-        )}
-
-        {estimate.lineItems.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontSize: 13, marginBottom: 8 }} className="muted">Line items</p>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  <th style={thStyle}>Item</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Qty</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Unit price</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {estimate.lineItems.map((li) => (
-                  <tr key={li.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={tdStyle}>
-                      <strong>{li.name}</strong>
-                      {li.description && <br />}
-                      {li.description && <span className="muted" style={{ fontSize: 13 }}>{li.description}</span>}
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{li.quantity}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{formatCents(li.unitPriceCents)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{formatCents(li.lineTotalCents)}</td>
+          {estimate.lineItems.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs text-muted-foreground mb-2">Line items</p>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="py-2 px-1 text-xs font-semibold text-muted-foreground text-left">Item</th>
+                    <th className="py-2 px-1 text-xs font-semibold text-muted-foreground text-right">Qty</th>
+                    <th className="py-2 px-1 text-xs font-semibold text-muted-foreground text-right">Unit price</th>
+                    <th className="py-2 px-1 text-xs font-semibold text-muted-foreground text-right">Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {estimate.lineItems.map((li) => (
+                    <tr key={li.id} className="border-b">
+                      <td className="py-2 px-1">
+                        <strong>{li.name}</strong>
+                        {li.description && <br />}
+                        {li.description && <span className="text-xs text-muted-foreground">{li.description}</span>}
+                      </td>
+                      <td className="py-2 px-1 text-right">{li.quantity}</td>
+                      <td className="py-2 px-1 text-right">{formatCents(li.unitPriceCents)}</td>
+                      <td className="py-2 px-1 text-right">{formatCents(li.lineTotalCents)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-        {estimate.terms && (
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontSize: 13 }} className="muted">Terms</p>
-            <p>{estimate.terms}</p>
-          </div>
-        )}
+          {estimate.terms && (
+            <div className="mt-4">
+              <p className="text-xs text-muted-foreground">Terms</p>
+              <p>{estimate.terms}</p>
+            </div>
+          )}
 
-        {estimate.notes && (
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontSize: 13 }} className="muted">Notes</p>
-            <p>{estimate.notes}</p>
-          </div>
-        )}
-      </div>
+          {estimate.notes && (
+            <div className="mt-4">
+              <p className="text-xs text-muted-foreground">Notes</p>
+              <p>{estimate.notes}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <h3>Update status</h3>
-        <EstimateStatusForm estimateId={estimate.id} currentStatus={estimate.status} />
-      </div>
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Update status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EstimateStatusForm estimateId={estimate.id} currentStatus={estimate.status} />
+        </CardContent>
+      </Card>
 
       {isDraft && (
-        <div className="card">
-          <h3>Edit estimate</h3>
-          <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
-            Only draft estimates can be edited.
-          </p>
-          <EstimateEditForm
-            estimateId={estimate.id}
-            initialData={{
-              scopeOfWork: estimate.scopeOfWork || '',
-              terms: estimate.terms || '',
-              notes: estimate.notes || '',
-              taxCents: estimate.taxCents,
-              lineItems: estimate.lineItems.map((li) => ({
-                name: li.name,
-                description: li.description || '',
-                quantity: li.quantity,
-                unitPriceCents: li.unitPriceCents,
-              })),
-            }}
-          />
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit estimate</CardTitle>
+            <CardDescription>
+              Only draft estimates can be edited.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <EstimateEditForm
+              estimateId={estimate.id}
+              initialData={{
+                scopeOfWork: estimate.scopeOfWork || '',
+                terms: estimate.terms || '',
+                notes: estimate.notes || '',
+                taxCents: estimate.taxCents,
+                lineItems: estimate.lineItems.map((li) => ({
+                  name: li.name,
+                  description: li.description || '',
+                  quantity: li.quantity,
+                  unitPriceCents: li.unitPriceCents,
+                })),
+              }}
+            />
+          </CardContent>
+        </Card>
       )}
     </main>
   )
@@ -164,15 +171,12 @@ function formatCents(cents: number): string {
   return '$' + (cents / 100).toFixed(2)
 }
 
-function estimateStatusColor(status: string): string {
+function estimateStatusClass(status: string): string {
   switch (status) {
-    case 'draft': return '#6b7280'
-    case 'sent': return '#2563eb'
-    case 'accepted': return '#059669'
-    case 'declined': return '#dc2626'
-    default: return '#6b7280'
+    case 'draft': return 'bg-gray-500 text-white'
+    case 'sent': return 'bg-blue-600 text-white'
+    case 'accepted': return 'bg-emerald-600 text-white'
+    case 'declined': return 'bg-red-600 text-white'
+    default: return 'bg-gray-500 text-white'
   }
 }
-
-const thStyle: React.CSSProperties = { padding: '8px 4px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--muted)' }
-const tdStyle: React.CSSProperties = { padding: '8px 4px' }

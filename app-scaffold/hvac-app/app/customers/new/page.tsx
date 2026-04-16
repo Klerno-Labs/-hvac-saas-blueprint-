@@ -4,6 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createCustomer } from './actions'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 
 export default function NewCustomerPage() {
   const router = useRouter()
@@ -27,97 +33,86 @@ export default function NewCustomerPage() {
   }
 
   return (
-    <main>
-      <div className="card" style={{ maxWidth: 540, margin: '0 auto' }}>
-        <h1>Add customer</h1>
-        <p className="muted">Add a new customer to your organization.</p>
+    <main className="max-w-xl mx-auto px-4 py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Add customer</CardTitle>
+          <CardDescription>Add a new customer to your organization.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">{error}</div>
+          )}
 
-        {error && (
-          <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>
-            {error}
-          </div>
-        )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First name *</Label>
+                <Input id="firstName" name="firstName" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last name</Label>
+                <Input id="lastName" name="lastName" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Company name</Label>
+              <Input id="companyName" name="companyName" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone *</Label>
+                <Input id="phone" name="phone" type="tel" required placeholder="(555) 555-5555" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" />
+              </div>
+            </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <label>
-              <span style={labelStyle}>First name *</span>
-              <input name="firstName" type="text" required style={inputStyle} />
-            </label>
-            <label>
-              <span style={labelStyle}>Last name</span>
-              <input name="lastName" type="text" style={inputStyle} />
-            </label>
-          </div>
-          <label>
-            <span style={labelStyle}>Company name</span>
-            <input name="companyName" type="text" style={inputStyle} />
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <label>
-              <span style={labelStyle}>Phone *</span>
-              <input name="phone" type="tel" required placeholder="(555) 555-5555" style={inputStyle} />
-            </label>
-            <label>
-              <span style={labelStyle}>Email</span>
-              <input name="email" type="email" style={inputStyle} />
-            </label>
-          </div>
+            <Separator />
 
-          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '8px 0' }} />
+            <div className="space-y-2">
+              <Label htmlFor="addressLine1">Address line 1</Label>
+              <Input id="addressLine1" name="addressLine1" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="addressLine2">Address line 2</Label>
+              <Input id="addressLine2" name="addressLine2" />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="city">City</Label>
+                <Input id="city" name="city" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Input id="state" name="state" maxLength={2} placeholder="TX" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="postalCode">ZIP</Label>
+                <Input id="postalCode" name="postalCode" />
+              </div>
+            </div>
 
-          <label>
-            <span style={labelStyle}>Address line 1</span>
-            <input name="addressLine1" type="text" style={inputStyle} />
-          </label>
-          <label>
-            <span style={labelStyle}>Address line 2</span>
-            <input name="addressLine2" type="text" style={inputStyle} />
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12 }}>
-            <label>
-              <span style={labelStyle}>City</span>
-              <input name="city" type="text" style={inputStyle} />
-            </label>
-            <label>
-              <span style={labelStyle}>State</span>
-              <input name="state" type="text" maxLength={2} placeholder="TX" style={inputStyle} />
-            </label>
-            <label>
-              <span style={labelStyle}>ZIP</span>
-              <input name="postalCode" type="text" style={inputStyle} />
-            </label>
-          </div>
+            <Separator />
 
-          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '8px 0' }} />
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" name="notes" rows={3} />
+            </div>
 
-          <label>
-            <span style={labelStyle}>Notes</span>
-            <textarea name="notes" rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
-          </label>
-
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-            <button type="submit" className="button" disabled={loading} style={{ textAlign: 'center' }}>
-              {loading ? 'Saving...' : 'Add customer'}
-            </button>
-            <Link href="/customers" style={{ padding: '10px 16px', fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>
-              Cancel
-            </Link>
-          </div>
-        </form>
-      </div>
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Saving...' : 'Add customer'}
+              </Button>
+              <Button variant="ghost" type="button" onClick={() => router.push('/customers')}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   )
-}
-
-const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 500 }
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { startStripeOnboarding, refreshStripeStatus } from './stripe/actions'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export function StripeConnectSection({
   accountId,
@@ -50,72 +53,65 @@ export function StripeConnectSection({
   const isConnected = accountId && localCharges
 
   return (
-    <div className="card">
-      <h2>Stripe Payments</h2>
-      <p className="muted" style={{ marginBottom: 16 }}>
-        Connect your Stripe account to collect payments from customers.
-      </p>
+    <Card>
+      <CardHeader>
+        <CardTitle>Stripe Payments</CardTitle>
+        <CardDescription>
+          Connect your Stripe account to collect payments from customers.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && (
+          <div className="text-destructive text-sm">{error}</div>
+        )}
 
-      {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>{error}</div>
-      )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div>
-          <p style={{ fontSize: 13 }} className="muted">Connection status</p>
-          <p style={{ fontWeight: 600, color: isConnected ? '#059669' : '#d97706' }}>
-            {isConnected ? 'Connected' : accountId ? 'Onboarding incomplete' : 'Not connected'}
-          </p>
-        </div>
-        <div>
-          <p style={{ fontSize: 13 }} className="muted">Charges enabled</p>
-          <p style={{ fontWeight: 600, color: localCharges ? '#059669' : '#6b7280' }}>
-            {localCharges ? 'Yes' : 'No'}
-          </p>
-        </div>
-        <div>
-          <p style={{ fontSize: 13 }} className="muted">Payouts enabled</p>
-          <p style={{ fontWeight: 600, color: localPayouts ? '#059669' : '#6b7280' }}>
-            {localPayouts ? 'Yes' : 'No'}
-          </p>
-        </div>
-        {accountId && (
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <p style={{ fontSize: 13 }} className="muted">Account ID</p>
-            <p style={{ fontSize: 13, fontFamily: 'monospace' }}>{accountId}</p>
+            <p className="text-xs text-muted-foreground">Connection status</p>
+            <p className={cn('font-semibold', isConnected ? 'text-emerald-600' : 'text-amber-600')}>
+              {isConnected ? 'Connected' : accountId ? 'Onboarding incomplete' : 'Not connected'}
+            </p>
           </div>
-        )}
-      </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Charges enabled</p>
+            <p className={cn('font-semibold', localCharges ? 'text-emerald-600' : 'text-gray-500')}>
+              {localCharges ? 'Yes' : 'No'}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Payouts enabled</p>
+            <p className={cn('font-semibold', localPayouts ? 'text-emerald-600' : 'text-gray-500')}>
+              {localPayouts ? 'Yes' : 'No'}
+            </p>
+          </div>
+          {accountId && (
+            <div>
+              <p className="text-xs text-muted-foreground">Account ID</p>
+              <p className="text-xs font-mono">{accountId}</p>
+            </div>
+          )}
+        </div>
 
-      <div style={{ display: 'flex', gap: 12 }}>
-        {!isConnected && (
-          <button
-            onClick={handleConnect}
-            disabled={loading}
-            className="button"
-            style={{ textAlign: 'center' }}
-          >
-            {loading ? 'Redirecting...' : accountId ? 'Continue onboarding' : 'Connect Stripe'}
-          </button>
-        )}
-        {accountId && (
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            style={{
-              padding: '10px 16px',
-              fontSize: 14,
-              background: 'none',
-              border: '1px solid var(--border)',
-              borderRadius: 10,
-              cursor: 'pointer',
-              color: 'var(--text)',
-            }}
-          >
-            {refreshing ? 'Checking...' : 'Refresh status'}
-          </button>
-        )}
-      </div>
-    </div>
+        <div className="flex gap-3">
+          {!isConnected && (
+            <Button
+              onClick={handleConnect}
+              disabled={loading}
+            >
+              {loading ? 'Redirecting...' : accountId ? 'Continue onboarding' : 'Connect Stripe'}
+            </Button>
+          )}
+          {accountId && (
+            <Button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              variant="outline"
+            >
+              {refreshing ? 'Checking...' : 'Refresh status'}
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

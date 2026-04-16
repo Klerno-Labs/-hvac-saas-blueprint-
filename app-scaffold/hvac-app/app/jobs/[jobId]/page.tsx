@@ -3,6 +3,10 @@ import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { JobStatusForm } from './status-form'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default async function JobDetailPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { organizationId } = await requireAuth()
@@ -22,209 +26,196 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
   }
 
   return (
-    <main>
-      <div style={{ marginBottom: 20 }}>
-        <Link href="/jobs" className="muted" style={{ fontSize: 13 }}>
-          &larr; All jobs
-        </Link>
-      </div>
+    <main className="max-w-300 mx-auto px-4 py-8">
+      <Link href="/jobs" className="text-sm text-muted-foreground hover:underline mb-4 inline-block">
+        &larr; All jobs
+      </Link>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <Card className="mb-4">
+        <CardHeader className="flex flex-row items-start justify-between">
           <div>
-            <h1>{job.title}</h1>
-            <p className="muted">
+            <CardTitle className="text-2xl">{job.title}</CardTitle>
+            <p className="text-sm text-muted-foreground">
               Customer:{' '}
-              <Link href={`/customers/${job.customerId}` as never} style={{ color: 'var(--primary)' }}>
+              <Link href={`/customers/${job.customerId}` as never} className="text-primary hover:underline">
                 {job.customer.firstName} {job.customer.lastName || ''}
               </Link>
             </p>
           </div>
-          <span style={{
-            fontSize: 12,
-            padding: '4px 10px',
-            borderRadius: 6,
-            background: statusColor(job.status),
-            color: 'white',
-          }}>
-            {job.status.replace('_', ' ')}
-          </span>
-        </div>
+          <Badge variant={statusVariant(job.status)}>{job.status.replace('_', ' ')}</Badge>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Scheduled</p>
+              <p className="text-sm font-medium">{job.scheduledFor ? new Date(job.scheduledFor).toLocaleDateString() : '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Completed</p>
+              <p className="text-sm font-medium">{job.completedAt ? new Date(job.completedAt).toLocaleDateString() : '—'}</p>
+            </div>
+          </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 20 }}>
-          <div>
-            <p style={{ fontSize: 13 }} className="muted">Scheduled</p>
-            <p>{job.scheduledFor ? new Date(job.scheduledFor).toLocaleDateString() : '—'}</p>
-          </div>
-          <div>
-            <p style={{ fontSize: 13 }} className="muted">Completed</p>
-            <p>{job.completedAt ? new Date(job.completedAt).toLocaleDateString() : '—'}</p>
-          </div>
-        </div>
+          {job.notes && (
+            <div>
+              <p className="text-xs text-muted-foreground">Notes</p>
+              <p className="text-sm">{job.notes}</p>
+            </div>
+          )}
 
-        {job.notes && (
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontSize: 13 }} className="muted">Notes</p>
-            <p>{job.notes}</p>
-          </div>
-        )}
-
-        {job.technicianName && (
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontSize: 13 }} className="muted">Technician</p>
-            <p>{job.technicianName}</p>
-          </div>
-        )}
-      </div>
+          {job.technicianName && (
+            <div>
+              <p className="text-xs text-muted-foreground">Technician</p>
+              <p className="text-sm">{job.technicianName}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Proof of work section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h2>Proof of work</h2>
-        <Link href={`/jobs/${job.id}/proof-of-work` as never} className="button" style={{ fontSize: 14 }}>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-lg font-semibold">Proof of work</h2>
+        <Link href={`/jobs/${job.id}/proof-of-work` as never} className={cn(buttonVariants({ size: 'sm' }), 'no-underline')}>
           {job.workSummary ? 'Update' : 'Record completion'}
         </Link>
       </div>
 
       {job.workSummary ? (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <div>
-            <p style={{ fontSize: 13 }} className="muted">Work summary</p>
-            <p style={{ whiteSpace: 'pre-wrap' }}>{job.workSummary}</p>
-          </div>
-          {job.materialsUsed && (
-            <div style={{ marginTop: 12 }}>
-              <p style={{ fontSize: 13 }} className="muted">Materials used</p>
-              <p>{job.materialsUsed}</p>
+        <Card className="mb-4">
+          <CardContent className="space-y-3 pt-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Work summary</p>
+              <p className="text-sm whitespace-pre-wrap">{job.workSummary}</p>
             </div>
-          )}
-          {job.completionNotes && (
-            <div style={{ marginTop: 12 }}>
-              <p style={{ fontSize: 13 }} className="muted">Completion notes</p>
-              <p>{job.completionNotes}</p>
-            </div>
-          )}
-        </div>
+            {job.materialsUsed && (
+              <div>
+                <p className="text-xs text-muted-foreground">Materials used</p>
+                <p className="text-sm">{job.materialsUsed}</p>
+              </div>
+            )}
+            {job.completionNotes && (
+              <div>
+                <p className="text-xs text-muted-foreground">Completion notes</p>
+                <p className="text-sm">{job.completionNotes}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       ) : (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <p className="muted">No proof of work recorded yet.</p>
-        </div>
+        <Card className="mb-4">
+          <CardContent className="py-6 text-center">
+            <p className="text-sm text-muted-foreground">No proof of work recorded yet.</p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Estimates section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h2>Estimates</h2>
-        <Link href={`/estimates/new?jobId=${job.id}` as never} className="button" style={{ fontSize: 14 }}>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-lg font-semibold">Estimates</h2>
+        <Link href={`/estimates/new?jobId=${job.id}` as never} className={cn(buttonVariants({ size: 'sm' }), 'no-underline')}>
           New estimate
         </Link>
       </div>
 
       {job.estimates.length === 0 ? (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <p className="muted">No estimates yet for this job.</p>
-        </div>
+        <Card className="mb-4">
+          <CardContent className="py-6 text-center">
+            <p className="text-sm text-muted-foreground">No estimates yet for this job.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        <div className="space-y-2 mb-4">
           {job.estimates.map((est) => (
-            <Link key={est.id} href={`/estimates/${est.id}` as never} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div className="card" style={{ cursor: 'pointer' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong>#{est.estimateNumber}</strong>
-                    {est.aiDraftUsed && <span className="muted" style={{ marginLeft: 8, fontSize: 12 }}>AI draft</span>}
+            <Link key={est.id} href={`/estimates/${est.id}` as never} className="no-underline text-inherit">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="py-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <strong>#{est.estimateNumber}</strong>
+                      {est.aiDraftUsed && <span className="text-xs text-muted-foreground ml-2">AI draft</span>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">${(est.totalCents / 100).toFixed(2)}</span>
+                      <Badge variant={estimateStatusVariant(est.status)}>{est.status}</Badge>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontWeight: 600 }}>${(est.totalCents / 100).toFixed(2)}</span>
-                    <span style={{
-                      fontSize: 12,
-                      padding: '2px 8px',
-                      borderRadius: 6,
-                      background: estimateStatusColor(est.status),
-                      color: 'white',
-                    }}>
-                      {est.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>
       )}
 
       {/* Invoices section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h2>Invoices</h2>
-        <Link href={`/invoices/new?jobId=${job.id}` as never} className="button" style={{ fontSize: 14 }}>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-lg font-semibold">Invoices</h2>
+        <Link href={`/invoices/new?jobId=${job.id}` as never} className={cn(buttonVariants({ size: 'sm' }), 'no-underline')}>
           New invoice
         </Link>
       </div>
 
       {job.invoices.length === 0 ? (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <p className="muted">No invoices yet for this job.</p>
-        </div>
+        <Card className="mb-4">
+          <CardContent className="py-6 text-center">
+            <p className="text-sm text-muted-foreground">No invoices yet for this job.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        <div className="space-y-2 mb-4">
           {job.invoices.map((inv) => (
-            <Link key={inv.id} href={`/invoices/${inv.id}` as never} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div className="card" style={{ cursor: 'pointer' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong>#{inv.invoiceNumber}</strong>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontWeight: 600 }}>${(inv.totalCents / 100).toFixed(2)}</span>
-                    <span style={{
-                      fontSize: 12,
-                      padding: '2px 8px',
-                      borderRadius: 6,
-                      background: invoiceStatusColor(inv.status),
-                      color: 'white',
-                    }}>
-                      {inv.status}
-                    </span>
+            <Link key={inv.id} href={`/invoices/${inv.id}` as never} className="no-underline text-inherit">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="py-3">
+                  <div className="flex justify-between items-center">
+                    <strong>#{inv.invoiceNumber}</strong>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">${(inv.totalCents / 100).toFixed(2)}</span>
+                      <Badge variant={invoiceStatusVariant(inv.status)}>{inv.status}</Badge>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>
       )}
 
-      <div className="card">
-        <h3>Update status</h3>
-        <JobStatusForm jobId={job.id} currentStatus={job.status} />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Update status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <JobStatusForm jobId={job.id} currentStatus={job.status} />
+        </CardContent>
+      </Card>
     </main>
   )
 }
 
-function statusColor(status: string): string {
+function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
-    case 'draft': return '#6b7280'
-    case 'scheduled': return '#2563eb'
-    case 'in_progress': return '#d97706'
-    case 'completed': return '#059669'
-    case 'cancelled': return '#dc2626'
-    default: return '#6b7280'
+    case 'completed': return 'default'
+    case 'cancelled': return 'destructive'
+    case 'in_progress': return 'outline'
+    default: return 'secondary'
   }
 }
 
-function estimateStatusColor(status: string): string {
+function estimateStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
-    case 'draft': return '#6b7280'
-    case 'sent': return '#2563eb'
-    case 'accepted': return '#059669'
-    case 'declined': return '#dc2626'
-    default: return '#6b7280'
+    case 'accepted': return 'default'
+    case 'declined': return 'destructive'
+    case 'sent': return 'outline'
+    default: return 'secondary'
   }
 }
 
-function invoiceStatusColor(status: string): string {
+function invoiceStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
-    case 'draft': return '#6b7280'
-    case 'sent': return '#2563eb'
-    case 'paid': return '#059669'
-    case 'void': return '#dc2626'
-    case 'overdue': return '#d97706'
-    default: return '#6b7280'
+    case 'paid': return 'default'
+    case 'void': return 'destructive'
+    case 'overdue': return 'destructive'
+    case 'sent': return 'outline'
+    default: return 'secondary'
   }
 }

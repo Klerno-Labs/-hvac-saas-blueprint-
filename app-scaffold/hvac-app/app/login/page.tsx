@@ -4,6 +4,11 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 
 function LoginForm() {
   const router = useRouter()
@@ -37,84 +42,71 @@ function LoginForm() {
   }
 
   return (
-    <div className="card" style={{ maxWidth: 420, margin: '60px auto' }}>
-      <h1>Log in</h1>
-      <p className="muted">Welcome back.</p>
+    <Card className="w-full max-w-md">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl">Log in</CardTitle>
+        <CardDescription>Welcome back.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {registered && (
+          <div className="text-sm text-primary mb-4 p-3 bg-primary/10 rounded-lg">
+            Account created. Please log in.
+          </div>
+        )}
 
-      {registered && (
-        <div style={{ color: 'var(--primary)', marginBottom: 16, fontSize: 14 }}>
-          Account created. Please log in.
+        {error && (
+          <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleCredentials} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" required autoComplete="email" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" name="password" type="password" required autoComplete="current-password" />
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Logging in...' : 'Log in'}
+          </Button>
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-xs text-muted-foreground hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+        </form>
+
+        <div className="relative my-6">
+          <Separator />
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
+            or
+          </span>
         </div>
-      )}
 
-      {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>
-          {error}
-        </div>
-      )}
+        <Button variant="outline" className="w-full" onClick={handleGitHub}>
+          Continue with GitHub
+        </Button>
 
-      <form onSubmit={handleCredentials} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <label>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Email</span>
-          <input
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            style={inputStyle}
-          />
-        </label>
-        <label>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Password</span>
-          <input
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            style={inputStyle}
-          />
-        </label>
-        <button type="submit" className="button" disabled={loading} style={{ marginTop: 8, textAlign: 'center' }}>
-          {loading ? 'Logging in...' : 'Log in'}
-        </button>
-      </form>
-
-      <div style={{ margin: '20px 0', textAlign: 'center', position: 'relative' }}>
-        <span className="muted" style={{ fontSize: 12, background: 'var(--surface)', padding: '0 8px', position: 'relative', zIndex: 1 }}>or</span>
-        <hr style={{ position: 'absolute', top: '50%', left: 0, right: 0, border: 'none', borderTop: '1px solid var(--border)', margin: 0 }} />
-      </div>
-
-      <button
-        onClick={handleGitHub}
-        className="button"
-        style={{ width: '100%', textAlign: 'center', background: '#24292e' }}
-      >
-        Continue with GitHub
-      </button>
-
-      <p style={{ marginTop: 16, fontSize: 14, textAlign: 'center' }} className="muted">
-        Don&apos;t have an account? <Link href="/signup">Sign up</Link>
-      </p>
-    </div>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{' '}
+          <Link href="/signup" className="text-primary font-medium hover:underline">
+            Sign up
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   )
 }
 
 export default function LoginPage() {
   return (
-    <main>
-      <Suspense fallback={<div className="card" style={{ maxWidth: 420, margin: '60px auto' }}><p>Loading...</p></div>}>
+    <main className="flex items-center justify-center min-h-screen p-4">
+      <Suspense fallback={<div className="w-full max-w-md h-96 animate-pulse bg-muted rounded-xl" />}>
         <LoginForm />
       </Suspense>
     </main>
   )
-}
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

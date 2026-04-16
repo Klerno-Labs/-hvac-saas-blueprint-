@@ -1,11 +1,12 @@
 import { requireAuth } from '@/lib/session'
 import { db } from '@/lib/db'
 import Link from 'next/link'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 export default async function DashboardPage() {
   const { organization, organizationId } = await requireAuth()
 
-  // Parallel queries for dashboard metrics
   const [
     customerCount,
     activeJobCount,
@@ -40,20 +41,12 @@ export default async function DashboardPage() {
       take: 10,
     }),
     db.invoice.findMany({
-      where: {
-        organizationId,
-        status: 'sent',
-        dueDate: { lt: new Date() },
-      },
+      where: { organizationId, status: 'sent', dueDate: { lt: new Date() } },
       include: { customer: true },
       take: 5,
     }),
     db.job.findMany({
-      where: {
-        organizationId,
-        status: 'in_progress',
-        updatedAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-      },
+      where: { organizationId, status: 'in_progress', updatedAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
       include: { customer: true },
       take: 5,
     }),
@@ -62,163 +55,175 @@ export default async function DashboardPage() {
   const totalOutstandingCents = outstandingInvoices.reduce((sum, inv) => sum + inv.outstandingCents, 0)
 
   return (
-    <main>
-      <h1>Dashboard</h1>
-      <p className="muted" style={{ marginBottom: 24 }}>
-        {organization.name}
-      </p>
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">{organization.name}</p>
+      </div>
 
-      {/* Key metrics */}
-      <div className="grid grid-3" style={{ marginBottom: 24 }}>
-        <Link href="/customers" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div className="card" style={{ cursor: 'pointer' }}>
-            <p style={{ fontSize: 13 }} className="muted">Customers</p>
-            <p style={{ fontSize: 28, fontWeight: 700 }}>{customerCount}</p>
-          </div>
+      {/* Metric cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Link href="/customers" className="no-underline text-inherit">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Customers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{customerCount}</p>
+            </CardContent>
+          </Card>
         </Link>
-        <Link href="/jobs" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div className="card" style={{ cursor: 'pointer' }}>
-            <p style={{ fontSize: 13 }} className="muted">Active jobs</p>
-            <p style={{ fontSize: 28, fontWeight: 700 }}>{activeJobCount}</p>
-            <p className="muted" style={{ fontSize: 12 }}>{completedJobCount} completed</p>
-          </div>
+        <Link href="/jobs" className="no-underline text-inherit">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active jobs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{activeJobCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">{completedJobCount} completed</p>
+            </CardContent>
+          </Card>
         </Link>
-        <Link href="/invoices" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div className="card" style={{ cursor: 'pointer' }}>
-            <p style={{ fontSize: 13 }} className="muted">Outstanding</p>
-            <p style={{ fontSize: 28, fontWeight: 700, color: totalOutstandingCents > 0 ? '#d97706' : '#059669' }}>
-              {formatCents(totalOutstandingCents)}
-            </p>
-            <p className="muted" style={{ fontSize: 12 }}>{outstandingInvoices.length} invoice{outstandingInvoices.length !== 1 ? 's' : ''}</p>
-          </div>
+        <Link href="/invoices" className="no-underline text-inherit">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Outstanding</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className={`text-3xl font-bold ${totalOutstandingCents > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                {formatCents(totalOutstandingCents)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {outstandingInvoices.length} invoice{outstandingInvoices.length !== 1 ? 's' : ''}
+              </p>
+            </CardContent>
+          </Card>
         </Link>
       </div>
 
-      <div className="grid grid-3" style={{ marginBottom: 24 }}>
-        <Link href="/estimates" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div className="card" style={{ cursor: 'pointer' }}>
-            <p style={{ fontSize: 13 }} className="muted">Draft estimates</p>
-            <p style={{ fontSize: 28, fontWeight: 700 }}>{draftEstimateCount}</p>
-            <p className="muted" style={{ fontSize: 12 }}>{sentEstimateCount} sent</p>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Link href="/estimates" className="no-underline text-inherit">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Draft estimates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{draftEstimateCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">{sentEstimateCount} sent</p>
+            </CardContent>
+          </Card>
         </Link>
-        <Link href="/reminders" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div className="card" style={{ cursor: 'pointer' }}>
-            <p style={{ fontSize: 13 }} className="muted">Open reminders</p>
-            <p style={{ fontSize: 28, fontWeight: 700 }}>{openReminders.length}</p>
-          </div>
+        <Link href="/reminders" className="no-underline text-inherit">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Open reminders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{openReminders.length}</p>
+            </CardContent>
+          </Card>
         </Link>
-        <div className="card">
-          <p style={{ fontSize: 13 }} className="muted">Stripe</p>
-          <p style={{ fontSize: 14, fontWeight: 600, color: organization.stripeChargesEnabled ? '#059669' : '#d97706' }}>
-            {organization.stripeChargesEnabled ? 'Connected' : 'Not connected'}
-          </p>
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Stripe</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Badge variant={organization.stripeChargesEnabled ? 'default' : 'secondary'}>
+              {organization.stripeChargesEnabled ? 'Connected' : 'Not connected'}
+            </Badge>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Attention needed */}
       {(overdueInvoices.length > 0 || stalledJobs.length > 0) && (
-        <div className="card" style={{ marginBottom: 24, borderLeft: '4px solid #d97706' }}>
-          <h2 style={{ marginBottom: 12 }}>Needs attention</h2>
-
-          {overdueInvoices.length > 0 && (
-            <div style={{ marginBottom: overdueInvoices.length > 0 && stalledJobs.length > 0 ? 16 : 0 }}>
-              <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Overdue invoices</p>
-              {overdueInvoices.map((inv) => (
-                <Link key={inv.id} href={`/invoices/${inv.id}` as never} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                    <span>#{inv.invoiceNumber} — {inv.customer.firstName} {inv.customer.lastName || ''}</span>
-                    <span style={{ fontWeight: 600, color: '#d97706' }}>{formatCents(inv.outstandingCents)}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {stalledJobs.length > 0 && (
-            <div>
-              <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Stalled jobs (no update in 7+ days)</p>
-              {stalledJobs.map((job) => (
-                <Link key={job.id} href={`/jobs/${job.id}` as never} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                    <span>{job.title} — {job.customer.firstName} {job.customer.lastName || ''}</span>
-                    <span className="muted" style={{ fontSize: 12 }}>{job.status.replace('_', ' ')}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Open reminders */}
-      {openReminders.length > 0 && (
-        <div className="card" style={{ marginBottom: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h2>Open reminders</h2>
-            <Link href="/reminders" className="muted" style={{ fontSize: 13 }}>View all</Link>
-          </div>
-          {openReminders.map((rem) => (
-            <div key={rem.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-              <span>{rem.title}</span>
-              <span className="muted" style={{ fontSize: 12 }}>
-                {rem.dueAt ? new Date(rem.dueAt).toLocaleDateString() : '—'}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Outstanding invoices */}
-      {outstandingInvoices.length > 0 && (
-        <div className="card" style={{ marginBottom: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h2>Outstanding invoices</h2>
-            <Link href="/invoices" className="muted" style={{ fontSize: 13 }}>View all</Link>
-          </div>
-          {outstandingInvoices.map((inv) => (
-            <Link key={inv.id} href={`/invoices/${inv.id}` as never} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                <div>
-                  <strong>#{inv.invoiceNumber}</strong>
-                  <span className="muted" style={{ marginLeft: 8, fontSize: 13 }}>
-                    {inv.customer.firstName} {inv.customer.lastName || ''}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontWeight: 600 }}>{formatCents(inv.outstandingCents)}</span>
-                  <span style={{
-                    fontSize: 11,
-                    padding: '1px 6px',
-                    borderRadius: 4,
-                    background: inv.status === 'sent' ? '#dbeafe' : '#fef3c7',
-                    color: inv.status === 'sent' ? '#1d4ed8' : '#92400e',
-                  }}>
-                    {inv.status}
-                  </span>
-                </div>
+        <Card className="mb-6 border-l-4 border-l-amber-500">
+          <CardHeader>
+            <CardTitle className="text-lg">Needs attention</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {overdueInvoices.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold mb-2">Overdue invoices</p>
+                {overdueInvoices.map((inv) => (
+                  <Link key={inv.id} href={`/invoices/${inv.id}` as never} className="no-underline text-inherit">
+                    <div className="flex justify-between py-2 border-b cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded">
+                      <span className="text-sm">#{inv.invoiceNumber} — {inv.customer.firstName} {inv.customer.lastName || ''}</span>
+                      <span className="text-sm font-semibold text-amber-600">{formatCents(inv.outstandingCents)}</span>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            </Link>
-          ))}
-        </div>
+            )}
+            {stalledJobs.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold mb-2">Stalled jobs (no update in 7+ days)</p>
+                {stalledJobs.map((job) => (
+                  <Link key={job.id} href={`/jobs/${job.id}` as never} className="no-underline text-inherit">
+                    <div className="flex justify-between py-2 border-b cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded">
+                      <span className="text-sm">{job.title} — {job.customer.firstName} {job.customer.lastName || ''}</span>
+                      <Badge variant="secondary" className="text-xs">{job.status.replace('_', ' ')}</Badge>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
-      {/* Recent activity */}
-      <div className="card">
-        <h2 style={{ marginBottom: 12 }}>Recent activity</h2>
-        {recentActivity.length === 0 ? (
-          <p className="muted">No activity yet.</p>
-        ) : (
-          recentActivity.map((event) => (
-            <div key={event.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 13 }}>{formatEventName(event.eventName)}</span>
-              <span className="muted" style={{ fontSize: 12 }}>
-                {new Date(event.createdAt).toLocaleDateString()}{' '}
-                {new Date(event.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-          ))
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Outstanding invoices */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg">Outstanding invoices</CardTitle>
+            <Link href="/invoices" className="text-xs text-muted-foreground hover:underline">View all</Link>
+          </CardHeader>
+          <CardContent>
+            {outstandingInvoices.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No outstanding invoices.</p>
+            ) : (
+              outstandingInvoices.map((inv) => (
+                <Link key={inv.id} href={`/invoices/${inv.id}` as never} className="no-underline text-inherit">
+                  <div className="flex justify-between items-center py-2 border-b cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded">
+                    <div>
+                      <span className="text-sm font-medium">#{inv.invoiceNumber}</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        {inv.customer.firstName} {inv.customer.lastName || ''}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{formatCents(inv.outstandingCents)}</span>
+                      <Badge variant="outline" className="text-[10px]">{inv.status}</Badge>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Recent activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentActivity.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No activity yet.</p>
+            ) : (
+              recentActivity.map((event) => (
+                <div key={event.id} className="flex justify-between py-2 border-b">
+                  <span className="text-sm">{formatEventName(event.eventName)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(event.createdAt).toLocaleDateString()}{' '}
+                    {new Date(event.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       </div>
     </main>
   )
@@ -229,7 +234,5 @@ function formatCents(cents: number): string {
 }
 
 function formatEventName(name: string): string {
-  return name
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+  return name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateReminderStatus } from './actions'
+import { Button } from '@/components/ui/button'
 
 export function ReminderStatusForm({ reminderId }: { reminderId: string }) {
   const router = useRouter()
@@ -23,30 +24,24 @@ export function ReminderStatusForm({ reminderId }: { reminderId: string }) {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 4 }}>
-      <button
+    <div className="flex gap-1">
+      <Button
         onClick={handleComplete}
         disabled={loading}
-        className="button"
-        style={{ fontSize: 12, padding: '4px 10px', background: '#059669' }}
+        size="xs"
+        className="bg-emerald-600 hover:bg-emerald-700"
       >
         Done
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={handleDismiss}
         disabled={loading}
-        style={{
-          fontSize: 12,
-          padding: '4px 10px',
-          background: 'none',
-          border: '1px solid var(--border)',
-          borderRadius: 8,
-          cursor: 'pointer',
-          color: 'var(--muted)',
-        }}
+        size="xs"
+        variant="outline"
+        className="text-muted-foreground"
       >
         Dismiss
-      </button>
+      </Button>
     </div>
   )
 }

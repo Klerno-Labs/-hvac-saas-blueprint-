@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createOrganization } from './actions'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export function OnboardingForm() {
   const router = useRouter()
@@ -28,43 +31,27 @@ export function OnboardingForm() {
   return (
     <>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>
+        <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <label>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Business name *</span>
-          <input
-            name="name"
-            type="text"
-            required
-            placeholder="e.g. Smith HVAC Services"
-            style={inputStyle}
-          />
-        </label>
-        <label>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Business phone</span>
-          <input
-            name="phone"
-            type="tel"
-            placeholder="(555) 555-5555"
-            style={inputStyle}
-          />
-        </label>
-        <label>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Business email</span>
-          <input
-            name="email"
-            type="email"
-            placeholder="office@smithhvac.com"
-            style={inputStyle}
-          />
-        </label>
-        <label>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Timezone</span>
-          <select name="timezone" style={inputStyle}>
+      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Business name *</Label>
+          <Input id="name" name="name" type="text" required placeholder="e.g. Smith HVAC Services" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phone">Business phone</Label>
+          <Input id="phone" name="phone" type="tel" placeholder="(555) 555-5555" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email">Business email</Label>
+          <Input id="email" name="email" type="email" placeholder="office@smithhvac.com" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="timezone">Timezone</Label>
+          <select name="timezone" id="timezone" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors">
             <option value="">Select timezone</option>
             <option value="America/New_York">Eastern</option>
             <option value="America/Chicago">Central</option>
@@ -73,21 +60,11 @@ export function OnboardingForm() {
             <option value="America/Anchorage">Alaska</option>
             <option value="Pacific/Honolulu">Hawaii</option>
           </select>
-        </label>
-        <button type="submit" className="button" disabled={loading} style={{ marginTop: 8, textAlign: 'center' }}>
+        </div>
+        <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Creating...' : 'Create business'}
-        </button>
+        </Button>
       </form>
     </>
   )
-}
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

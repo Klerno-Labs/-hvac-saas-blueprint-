@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { generatePortalLink, revokePortalTokens } from './portal-actions'
+import { Button } from '@/components/ui/button'
 
 export function PortalLinkSection({ customerId }: { customerId: string }) {
   const [portalUrl, setPortalUrl] = useState<string | null>(null)
@@ -33,56 +34,48 @@ export function PortalLinkSection({ customerId }: { customerId: string }) {
   return (
     <div>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 12, fontSize: 14 }}>{error}</div>
+        <div className="text-destructive mb-3 text-sm">{error}</div>
       )}
 
       {portalUrl ? (
         <div>
-          <p style={{ fontSize: 13, marginBottom: 8 }}>Share this link with your customer:</p>
-          <div style={{
-            padding: '8px 12px',
-            background: '#f9fafb',
-            borderRadius: 8,
-            border: '1px solid var(--border)',
-            fontSize: 13,
-            fontFamily: 'monospace',
-            wordBreak: 'break-all',
-            marginBottom: 12,
-          }}>
+          <p className="text-xs mb-2">Share this link with your customer:</p>
+          <div className="rounded-lg border border-border bg-muted/50 px-3 py-2 font-mono text-xs break-all mb-3">
             {portalUrl}
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
+          <div className="flex gap-2">
+            <Button
               onClick={() => navigator.clipboard.writeText(portalUrl)}
-              style={{ fontSize: 13, padding: '6px 12px', background: 'none', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}
+              variant="outline"
+              size="sm"
             >
               Copy link
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleRevoke}
               disabled={loading}
-              style={{ fontSize: 13, padding: '6px 12px', background: 'none', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', color: '#dc2626' }}
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive"
             >
               Revoke all links
-            </button>
+            </Button>
           </div>
-          <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+          <p className="text-xs text-muted-foreground mt-2">
             Link expires in 30 days. Revoking invalidates all active links for this customer.
           </p>
         </div>
       ) : (
         <div>
-          <p className="muted" style={{ fontSize: 13, marginBottom: 8 }}>
+          <p className="text-xs text-muted-foreground mb-2">
             Generate a portal link so your customer can view their estimates, invoices, and pay online.
           </p>
-          <button
+          <Button
             onClick={handleGenerate}
             disabled={loading}
-            className="button"
-            style={{ fontSize: 14 }}
           >
             {loading ? 'Generating...' : 'Generate portal link'}
-          </button>
+          </Button>
         </div>
       )}
     </div>

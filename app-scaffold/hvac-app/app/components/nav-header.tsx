@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -17,79 +19,56 @@ const NAV_ITEMS = [
 
 export function NavHeader() {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
-  // Don't render nav on public/portal/auth pages
   const hideOn = ['/login', '/signup', '/onboarding', '/portal', '/pay']
   if (hideOn.some((p) => pathname.startsWith(p)) || pathname === '/') {
     return null
   }
 
   return (
-    <header style={{
-      background: 'var(--surface)',
-      borderBottom: '1px solid var(--border)',
-      padding: '0 20px',
-      position: 'sticky',
-      top: 0,
-      zIndex: 50,
-    }}>
-      <div style={{
-        maxWidth: 1100,
-        margin: '0 auto',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: 52,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, overflow: 'auto' }}>
-          <Link href="/dashboard" style={{
-            fontWeight: 700,
-            fontSize: 15,
-            color: 'var(--primary)',
-            textDecoration: 'none',
-            marginRight: 16,
-            whiteSpace: 'nowrap',
-          }}>
+    <header className="sticky top-0 z-50 bg-card border-b">
+      <div className="max-w-[1200px] mx-auto flex items-center justify-between h-14 px-4">
+        <div className="flex items-center gap-1 overflow-x-auto">
+          <Link
+            href="/dashboard"
+            className="font-bold text-primary text-base no-underline mr-4 whitespace-nowrap"
+          >
             HVAC SaaS
           </Link>
+          <Separator orientation="vertical" className="h-6 mr-2" />
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link
                 key={item.href}
                 href={item.href as never}
-                style={{
-                  fontSize: 13,
-                  padding: '6px 10px',
-                  borderRadius: 6,
-                  textDecoration: 'none',
-                  color: isActive ? 'var(--primary)' : 'var(--muted)',
-                  background: isActive ? '#f0fdfa' : 'transparent',
-                  fontWeight: isActive ? 600 : 400,
-                  whiteSpace: 'nowrap',
-                }}
+                className={`text-[13px] px-3 py-1.5 rounded-md no-underline whitespace-nowrap transition-colors ${
+                  isActive
+                    ? 'bg-primary/10 text-primary font-semibold'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                }`}
               >
                 {item.label}
               </Link>
             )
           })}
         </div>
-        <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
-          style={{
-            fontSize: 13,
-            padding: '6px 12px',
-            background: 'none',
-            border: '1px solid var(--border)',
-            borderRadius: 6,
-            cursor: 'pointer',
-            color: 'var(--muted)',
-            whiteSpace: 'nowrap',
-            marginLeft: 12,
-          }}
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-3 ml-4">
+          {session?.user?.name && (
+            <span className="text-xs text-muted-foreground hidden md:inline">
+              {session.user.name}
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="text-xs"
+          >
+            Sign out
+          </Button>
+        </div>
       </div>
     </header>
   )

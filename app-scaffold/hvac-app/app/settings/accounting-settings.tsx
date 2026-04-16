@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import { updateAccountingConfig, triggerAccountingSync } from './accounting/actions'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
 const PROVIDERS = [
   { value: 'quickbooks', label: 'QuickBooks' },
@@ -62,102 +66,85 @@ export function AccountingSettingsSection({
   }
 
   return (
-    <div className="card" style={{ marginTop: 24 }}>
-      <h2>Accounting Integration</h2>
-      <p className="muted" style={{ marginBottom: 16 }}>
-        Connect your accounting software to sync customers, invoices, and payments.
-      </p>
-
-      {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>{error}</div>
-      )}
-      {saved && (
-        <div style={{ color: '#059669', marginBottom: 16, fontSize: 14 }}>Settings saved.</div>
-      )}
-      {syncResult && (
-        <div style={{ color: '#059669', marginBottom: 16, fontSize: 14 }}>{syncResult}</div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <label>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Provider</span>
-          <select
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-            style={inputStyle}
-          >
-            <option value="">Select provider</option>
-            {PROVIDERS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
-            ))}
-          </select>
-        </label>
-
-        {provider && (
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={connected}
-              onChange={(e) => setConnected(e.target.checked)}
-              style={{ width: 18, height: 18 }}
-            />
-            <span style={{ fontSize: 14, fontWeight: 500 }}>Mark as connected</span>
-          </label>
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>Accounting Integration</CardTitle>
+        <CardDescription>
+          Connect your accounting software to sync customers, invoices, and payments.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && (
+          <div className="text-destructive text-sm">{error}</div>
+        )}
+        {saved && (
+          <div className="text-emerald-600 text-sm">Settings saved.</div>
+        )}
+        {syncResult && (
+          <div className="text-emerald-600 text-sm">{syncResult}</div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 8 }}>
-          <div>
-            <p style={{ fontSize: 13 }} className="muted">Status</p>
-            <p style={{ fontWeight: 600, color: connected && provider ? '#059669' : '#6b7280' }}>
-              {connected && provider ? `Connected (${provider})` : 'Not connected'}
-            </p>
+        <div className="flex flex-col gap-3">
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">Provider</Label>
+            <select
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              className="block w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <option value="">Select provider</option>
+              {PROVIDERS.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
           </div>
-          <div>
-            <p style={{ fontSize: 13 }} className="muted">Last sync</p>
-            <p style={{ fontSize: 14 }}>
-              {lastSyncAt ? new Date(lastSyncAt).toLocaleString() : 'Never'}
-            </p>
+
+          {provider && (
+            <Label className="cursor-pointer">
+              <input
+                type="checkbox"
+                checked={connected}
+                onChange={(e) => setConnected(e.target.checked)}
+                className="size-4.5"
+              />
+              <span className="text-sm font-medium">Mark as connected</span>
+            </Label>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 mt-2">
+            <div>
+              <p className="text-xs text-muted-foreground">Status</p>
+              <p className={cn('font-semibold', connected && provider ? 'text-emerald-600' : 'text-gray-500')}>
+                {connected && provider ? `Connected (${provider})` : 'Not connected'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Last sync</p>
+              <p className="text-sm">
+                {lastSyncAt ? new Date(lastSyncAt).toLocaleString() : 'Never'}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="button"
-          style={{ textAlign: 'center' }}
-        >
-          {saving ? 'Saving...' : 'Save settings'}
-        </button>
-        {connected && provider && (
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            style={{
-              padding: '10px 16px',
-              fontSize: 14,
-              background: 'none',
-              border: '1px solid var(--border)',
-              borderRadius: 10,
-              cursor: 'pointer',
-              color: 'var(--text)',
-            }}
+        <div className="flex gap-3">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
           >
-            {syncing ? 'Syncing...' : 'Sync now'}
-          </button>
-        )}
-      </div>
-    </div>
+            {saving ? 'Saving...' : 'Save settings'}
+          </Button>
+          {connected && provider && (
+            <Button
+              onClick={handleSync}
+              disabled={syncing}
+              variant="outline"
+            >
+              {syncing ? 'Syncing...' : 'Sync now'}
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
-}
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

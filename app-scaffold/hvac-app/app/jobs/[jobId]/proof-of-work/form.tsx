@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { recordProofOfWork } from './actions'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 type InitialData = {
   workSummary: string
@@ -35,67 +39,55 @@ export function ProofOfWorkForm({ jobId, initialData }: { jobId: string; initial
   return (
     <>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>{error}</div>
+        <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
-        <label>
-          <span style={labelStyle}>Summary of work performed *</span>
-          <textarea
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="workSummary">Summary of work performed *</Label>
+          <Textarea
+            id="workSummary"
             name="workSummary"
             required
             rows={4}
             defaultValue={initialData.workSummary}
             placeholder="Describe the work completed on this job..."
-            style={{ ...inputStyle, resize: 'vertical' }}
           />
-        </label>
-        <label>
-          <span style={labelStyle}>Materials used</span>
-          <textarea
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="materialsUsed">Materials used</Label>
+          <Textarea
+            id="materialsUsed"
             name="materialsUsed"
             rows={2}
             defaultValue={initialData.materialsUsed}
             placeholder="List materials, parts, or supplies used..."
-            style={{ ...inputStyle, resize: 'vertical' }}
           />
-        </label>
-        <label>
-          <span style={labelStyle}>Technician name</span>
-          <input
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="technicianName">Technician name</Label>
+          <Input
+            id="technicianName"
             name="technicianName"
             type="text"
             defaultValue={initialData.technicianName}
-            style={inputStyle}
           />
-        </label>
-        <label>
-          <span style={labelStyle}>Completion notes</span>
-          <textarea
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="completionNotes">Completion notes</Label>
+          <Textarea
+            id="completionNotes"
             name="completionNotes"
             rows={2}
             defaultValue={initialData.completionNotes}
             placeholder="Any internal notes about job completion..."
-            style={{ ...inputStyle, resize: 'vertical' }}
           />
-        </label>
+        </div>
 
-        <button type="submit" className="button" disabled={loading} style={{ marginTop: 8, textAlign: 'center' }}>
+        <Button type="submit" disabled={loading} className="mt-2">
           {loading ? 'Saving...' : 'Record completion'}
-        </button>
+        </Button>
       </form>
     </>
   )
-}
-
-const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 500 }
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

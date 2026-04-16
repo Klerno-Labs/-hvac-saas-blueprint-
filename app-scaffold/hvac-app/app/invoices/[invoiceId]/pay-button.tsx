@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createCheckoutSession } from './payment-actions'
+import { Button } from '@/components/ui/button'
 
 export function PayButton({ invoiceId }: { invoiceId: string }) {
   const [loading, setLoading] = useState(false)
@@ -24,17 +25,16 @@ export function PayButton({ invoiceId }: { invoiceId: string }) {
   return (
     <div>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 12, fontSize: 14 }}>{error}</div>
+        <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">{error}</div>
       )}
-      <button
+      <Button
         onClick={handlePay}
         disabled={loading}
-        className="button"
-        style={{ textAlign: 'center', background: '#059669' }}
+        className="bg-emerald-600 hover:bg-emerald-700 text-white"
       >
         {loading ? 'Creating payment link...' : 'Create payment link'}
-      </button>
-      <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+      </Button>
+      <p className="text-xs text-muted-foreground mt-2">
         Opens Stripe Checkout. Payment is confirmed via webhook.
       </p>
     </div>

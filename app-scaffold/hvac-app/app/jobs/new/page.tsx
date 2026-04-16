@@ -1,6 +1,8 @@
 import { requireAuth } from '@/lib/session'
 import { db } from '@/lib/db'
+import Link from 'next/link'
 import { NewJobForm } from './form'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function NewJobPage({ searchParams }: { searchParams: Promise<{ customerId?: string }> }) {
   const { organizationId } = await requireAuth()
@@ -13,19 +15,22 @@ export default async function NewJobPage({ searchParams }: { searchParams: Promi
   })
 
   return (
-    <main>
-      <div className="card" style={{ maxWidth: 540, margin: '0 auto' }}>
-        <h1>New job</h1>
-        <p className="muted">Create a job for one of your customers.</p>
-
-        {customers.length === 0 ? (
-          <p style={{ marginTop: 16 }}>
-            You need to <a href="/customers/new" style={{ color: 'var(--primary)' }}>add a customer</a> first.
-          </p>
-        ) : (
-          <NewJobForm customers={customers} preselectedCustomerId={customerId} />
-        )}
-      </div>
+    <main className="max-w-xl mx-auto px-4 py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>New job</CardTitle>
+          <CardDescription>Create a job for one of your customers.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {customers.length === 0 ? (
+            <p className="text-sm">
+              You need to <Link href="/customers/new" className="text-primary hover:underline">add a customer</Link> first.
+            </p>
+          ) : (
+            <NewJobForm customers={customers} preselectedCustomerId={customerId} />
+          )}
+        </CardContent>
+      </Card>
     </main>
   )
 }

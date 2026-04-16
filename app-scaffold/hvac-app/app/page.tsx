@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { getOptionalSession } from '@/lib/session'
 import { redirect } from 'next/navigation'
+import { buttonVariants } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 export default async function HomePage() {
   const session = await getOptionalSession()
@@ -10,21 +13,55 @@ export default async function HomePage() {
   }
 
   return (
-    <main>
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h1>Get paid faster on every HVAC job</h1>
-        <p className="muted">
+    <main className="max-w-4xl mx-auto px-4 py-16">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold tracking-tight mb-4">
+          Get paid faster on every HVAC job
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
           Quote, complete, invoice, and collect payment in one workflow built for small residential HVAC shops.
         </p>
-        <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-          <Link href="/signup" className="button">Start setup</Link>
-          <Link href="/login" className="button" style={{ background: '#374151' }}>Log in</Link>
+        <div className="flex justify-center gap-4">
+          <Link href="/signup" className={cn(buttonVariants({ size: 'lg' }), 'no-underline')}>
+            Start setup
+          </Link>
+          <Link href="/login" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'no-underline')}>
+            Log in
+          </Link>
         </div>
       </div>
-      <div className="grid grid-3">
-        <div className="card"><h3>Create quotes fast</h3><p className="muted">Generate estimates and line items quickly.</p></div>
-        <div className="card"><h3>Capture proof of work</h3><p className="muted">Record job completion before invoicing.</p></div>
-        <div className="card"><h3>Collect payment</h3><p className="muted">Use connected-account payments tied to invoices.</p></div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Create quotes fast</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Generate estimates with AI-assisted drafting and line-item detail.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Capture proof of work</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Record job completion details before creating invoices.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Collect payment</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Send invoices with built-in Stripe payment links.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </main>
   )

@@ -1,6 +1,9 @@
 import { requireAuth } from '@/lib/session'
 import { db } from '@/lib/db'
 import Link from 'next/link'
+import { Card, CardContent } from '@/components/ui/card'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default async function CustomersPage() {
   const { organizationId } = await requireAuth()
@@ -11,48 +14,44 @@ export default async function CustomersPage() {
   })
 
   return (
-    <main>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1>Customers</h1>
-        <Link href="/customers/new" className="button">Add customer</Link>
+    <main className="max-w-300 mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Customers</h1>
+        <Link href="/customers/new" className={cn(buttonVariants(), 'no-underline')}>
+          Add customer
+        </Link>
       </div>
 
       {customers.length === 0 ? (
-        <div className="card">
-          <p className="muted">No customers yet. Add your first customer to get started.</p>
-        </div>
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">No customers yet. Add your first customer to get started.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="space-y-2">
           {customers.map((customer) => (
-            <Link
-              key={customer.id}
-              href={`/customers/${customer.id}` as never}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <div className="card" style={{ cursor: 'pointer' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong>{customer.firstName} {customer.lastName || ''}</strong>
-                    {customer.companyName && (
-                      <span className="muted" style={{ marginLeft: 8 }}>{customer.companyName}</span>
-                    )}
+            <Link key={customer.id} href={`/customers/${customer.id}` as never} className="no-underline text-inherit">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="py-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-semibold">{customer.firstName} {customer.lastName || ''}</span>
+                      {customer.companyName && (
+                        <span className="text-muted-foreground ml-2 text-sm">{customer.companyName}</span>
+                      )}
+                    </div>
+                    <span className="text-sm text-muted-foreground">{customer.phone || customer.email || ''}</span>
                   </div>
-                  <span className="muted" style={{ fontSize: 13 }}>{customer.phone || customer.email || ''}</span>
-                </div>
-                {customer.city && customer.state && (
-                  <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-                    {customer.city}, {customer.state}
-                  </p>
-                )}
-              </div>
+                  {customer.city && customer.state && (
+                    <p className="text-xs text-muted-foreground mt-1">{customer.city}, {customer.state}</p>
+                  )}
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>
       )}
-
-      <div style={{ marginTop: 16 }}>
-        <Link href="/dashboard" className="muted" style={{ fontSize: 13 }}>Back to dashboard</Link>
-      </div>
     </main>
   )
 }

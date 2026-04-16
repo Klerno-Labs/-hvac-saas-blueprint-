@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createEstimate, generateAiDraft } from './actions'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 type LineItem = {
   name: string
@@ -98,110 +102,108 @@ export function EstimateForm({ jobId, jobTitle }: { jobId: string; jobTitle: str
 
   return (
     <>
-      <div style={{ margin: '16px 0', padding: '12px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg my-4">
+        <div className="flex justify-between items-center">
           <div>
-            <strong style={{ fontSize: 14 }}>AI Draft Assist</strong>
-            <p className="muted" style={{ fontSize: 13, margin: '4px 0 0' }}>
+            <strong className="text-sm">AI Draft Assist</strong>
+            <p className="text-xs text-muted-foreground mt-1">
               Generate a starting draft from job context. You can review and edit everything before saving.
             </p>
           </div>
-          <button
+          <Button
             type="button"
             onClick={handleAiDraft}
             disabled={aiLoading}
-            className="button"
-            style={{ fontSize: 13, whiteSpace: 'nowrap' }}
+            size="sm"
+            className="whitespace-nowrap"
           >
             {aiLoading ? 'Generating...' : 'Generate draft'}
-          </button>
+          </Button>
         </div>
         {aiUsed && (
-          <p style={{ fontSize: 12, color: '#059669', marginTop: 8 }}>
+          <p className="text-xs text-emerald-600 mt-2">
             Draft generated. Review and edit before saving.
           </p>
         )}
       </div>
 
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>{error}</div>
+        <div className="text-destructive text-sm mb-4">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <label>
-          <span style={labelStyle}>Scope of work *</span>
-          <textarea
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <div>
+          <Label className="text-sm font-medium">Scope of work *</Label>
+          <Textarea
             value={scopeOfWork}
             onChange={(e) => setScopeOfWork(e.target.value)}
             required
             rows={4}
-            style={{ ...inputStyle, resize: 'vertical' }}
+            className="mt-1 resize-y"
           />
-        </label>
+        </div>
 
-        <div style={{ marginTop: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={labelStyle}>Line items *</span>
-            <button type="button" onClick={addLineItem} style={{ fontSize: 13, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <div className="mt-2">
+          <div className="flex justify-between items-center mb-2">
+            <Label className="text-sm font-medium">Line items *</Label>
+            <button type="button" onClick={addLineItem} className="text-xs text-primary bg-transparent border-none cursor-pointer">
               + Add item
             </button>
           </div>
 
           {lineItems.map((li, i) => (
-            <div key={i} style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 12, marginBottom: 8 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <input
+            <div key={i} className="border rounded-lg p-3 mb-2">
+              <div className="grid grid-cols-[1fr_auto] gap-2 items-start">
+                <div className="flex flex-col gap-2">
+                  <Input
                     placeholder="Item name"
                     value={li.name}
                     onChange={(e) => updateLineItem(i, 'name', e.target.value)}
                     required
-                    style={inputStyle}
                   />
-                  <input
+                  <Input
                     placeholder="Description (optional)"
                     value={li.description}
                     onChange={(e) => updateLineItem(i, 'description', e.target.value)}
-                    style={inputStyle}
                   />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                    <label>
-                      <span style={{ fontSize: 12 }} className="muted">Qty</span>
-                      <input
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Qty</Label>
+                      <Input
                         type="number"
                         min={1}
                         value={li.quantity}
                         onChange={(e) => updateLineItem(i, 'quantity', parseInt(e.target.value) || 1)}
-                        style={inputStyle}
+                        className="mt-1"
                       />
-                    </label>
-                    <label>
-                      <span style={{ fontSize: 12 }} className="muted">Unit price ($)</span>
-                      <input
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Unit price ($)</Label>
+                      <Input
                         type="number"
                         min={0}
                         step="0.01"
                         value={(li.unitPriceCents / 100).toFixed(2)}
                         onChange={(e) => updateLineItem(i, 'unitPriceCents', Math.round(parseFloat(e.target.value || '0') * 100))}
-                        style={inputStyle}
+                        className="mt-1"
                       />
-                    </label>
-                    <label>
-                      <span style={{ fontSize: 12 }} className="muted">Line total</span>
-                      <input
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Line total</Label>
+                      <Input
                         type="text"
                         readOnly
                         value={formatCents(li.quantity * li.unitPriceCents)}
-                        style={{ ...inputStyle, background: '#f9fafb' }}
+                        className="mt-1 bg-muted"
                       />
-                    </label>
+                    </div>
                   </div>
                 </div>
                 {lineItems.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeLineItem(i)}
-                    style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 18, padding: '0 4px' }}
+                    className="bg-transparent border-none text-destructive cursor-pointer text-lg px-1"
                     title="Remove item"
                   >
                     &times;
@@ -212,69 +214,60 @@ export function EstimateForm({ jobId, jobTitle }: { jobId: string; jobTitle: str
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <label>
-            <span style={labelStyle}>Tax ($)</span>
-            <input
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-sm font-medium">Tax ($)</Label>
+            <Input
               type="number"
               min={0}
               step="0.01"
               value={(taxCents / 100).toFixed(2)}
               onChange={(e) => setTaxCents(Math.round(parseFloat(e.target.value || '0') * 100))}
-              style={inputStyle}
+              className="mt-1"
             />
-          </label>
+          </div>
           <div>
-            <span style={labelStyle}>Total</span>
-            <p style={{ fontSize: 20, fontWeight: 700, marginTop: 4 }}>{formatCents(totalCents)}</p>
+            <Label className="text-sm font-medium">Total</Label>
+            <p className="text-xl font-bold mt-1">{formatCents(totalCents)}</p>
           </div>
         </div>
 
-        <label>
-          <span style={labelStyle}>Terms</span>
-          <textarea
+        <div>
+          <Label className="text-sm font-medium">Terms</Label>
+          <Textarea
             value={terms}
             onChange={(e) => setTerms(e.target.value)}
             rows={2}
             placeholder="Payment terms, warranty info, etc."
-            style={{ ...inputStyle, resize: 'vertical' }}
+            className="mt-1 resize-y"
           />
-        </label>
+        </div>
 
-        <label>
-          <span style={labelStyle}>Notes</span>
-          <textarea
+        <div>
+          <Label className="text-sm font-medium">Notes</Label>
+          <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Additional notes for the customer"
-            style={{ ...inputStyle, resize: 'vertical' }}
+            className="mt-1 resize-y"
           />
-        </label>
+        </div>
 
-        <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-          <button type="submit" className="button" disabled={loading} style={{ textAlign: 'center' }}>
+        <div className="flex gap-3 mt-2">
+          <Button type="submit" disabled={loading}>
             {loading ? 'Saving...' : 'Save estimate'}
-          </button>
-          <Link href={`/jobs/${jobId}` as never} style={{ padding: '10px 16px', fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>
+          </Button>
+          <Link
+            href={`/jobs/${jobId}` as never}
+            className={buttonVariants({ variant: 'ghost' })}
+          >
             Cancel
           </Link>
         </div>
       </form>
     </>
   )
-}
-
-const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 500 }
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }
 
 function formatCents(cents: number): string {

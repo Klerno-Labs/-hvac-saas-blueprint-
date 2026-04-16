@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import { updateCollectionsPolicy } from './collections/actions'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export function CollectionsSettingsSection({
   initialEnabled,
@@ -44,96 +48,80 @@ export function CollectionsSettingsSection({
   }
 
   return (
-    <div className="card" style={{ marginTop: 24 }}>
-      <h2>Collections Automation</h2>
-      <p className="muted" style={{ marginBottom: 16 }}>
-        Automatically track overdue invoices and create follow-up reminders.
-      </p>
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>Collections Automation</CardTitle>
+        <CardDescription>
+          Automatically track overdue invoices and create follow-up reminders.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && (
+          <div className="text-destructive text-sm">{error}</div>
+        )}
+        {saved && (
+          <div className="text-emerald-600 text-sm">Settings saved.</div>
+        )}
 
-      {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>{error}</div>
-      )}
-      {saved && (
-        <div style={{ color: '#059669', marginBottom: 16, fontSize: 14 }}>Settings saved.</div>
-      )}
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+        <Label className="cursor-pointer">
           <input
             type="checkbox"
             checked={enabled}
             onChange={(e) => setEnabled(e.target.checked)}
-            style={{ width: 18, height: 18 }}
+            className="size-4.5"
           />
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Enable collections automation</span>
-        </label>
-      </div>
+          <span className="text-sm font-medium">Enable collections automation</span>
+        </Label>
 
-      {enabled && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px', background: '#f9fafb', borderRadius: 8 }}>
-          <p style={{ fontSize: 13, fontWeight: 600 }}>Reminder stages (days after due date)</p>
+        {enabled && (
+          <div className="flex flex-col gap-3 rounded-lg bg-muted/50 p-4">
+            <p className="text-xs font-semibold">Reminder stages (days after due date)</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-            <label>
-              <span style={labelStyle}>First reminder</span>
-              <input
-                type="number"
-                min={1}
-                max={90}
-                value={overdue1Days}
-                onChange={(e) => setOverdue1Days(parseInt(e.target.value) || 7)}
-                style={inputStyle}
-              />
-              <span className="muted" style={{ fontSize: 11 }}>days overdue</span>
-            </label>
-            <label>
-              <span style={labelStyle}>Second reminder</span>
-              <input
-                type="number"
-                min={2}
-                max={120}
-                value={overdue2Days}
-                onChange={(e) => setOverdue2Days(parseInt(e.target.value) || 14)}
-                style={inputStyle}
-              />
-              <span className="muted" style={{ fontSize: 11 }}>days overdue</span>
-            </label>
-            <label>
-              <span style={labelStyle}>Final notice</span>
-              <input
-                type="number"
-                min={3}
-                max={180}
-                value={finalDays}
-                onChange={(e) => setFinalDays(parseInt(e.target.value) || 30)}
-                style={inputStyle}
-              />
-              <span className="muted" style={{ fontSize: 11 }}>days overdue</span>
-            </label>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">First reminder</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={overdue1Days}
+                  onChange={(e) => setOverdue1Days(parseInt(e.target.value) || 7)}
+                />
+                <span className="text-[11px] text-muted-foreground">days overdue</span>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Second reminder</Label>
+                <Input
+                  type="number"
+                  min={2}
+                  max={120}
+                  value={overdue2Days}
+                  onChange={(e) => setOverdue2Days(parseInt(e.target.value) || 14)}
+                />
+                <span className="text-[11px] text-muted-foreground">days overdue</span>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Final notice</Label>
+                <Input
+                  type="number"
+                  min={3}
+                  max={180}
+                  value={finalDays}
+                  onChange={(e) => setFinalDays(parseInt(e.target.value) || 30)}
+                />
+                <span className="text-[11px] text-muted-foreground">days overdue</span>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <button
-        onClick={handleSave}
-        disabled={loading}
-        className="button"
-        style={{ marginTop: 16, textAlign: 'center' }}
-      >
-        {loading ? 'Saving...' : 'Save settings'}
-      </button>
-    </div>
+        <Button
+          onClick={handleSave}
+          disabled={loading}
+        >
+          {loading ? 'Saving...' : 'Save settings'}
+        </Button>
+      </CardContent>
+    </Card>
   )
-}
-
-const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 500 }
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

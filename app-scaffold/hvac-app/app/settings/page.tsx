@@ -1,16 +1,45 @@
 import { requireAuth } from '@/lib/session'
+import { db } from '@/lib/db'
 import Link from 'next/link'
 import { StripeConnectSection } from './stripe-connect'
 import { CollectionsSettingsSection } from './collections-settings'
 import { AccountingSettingsSection } from './accounting-settings'
+import { TeamSection } from './team-section'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default async function SettingsPage() {
-  const { organization } = await requireAuth()
+  const { organization, organizationId, userId } = await requireAuth()
+
+  const [members, invites] = await Promise.all([
+    db.organizationMember.findMany({
+      where: { organizationId },
+      include: { user: { select: { name: true, email: true } } },
+    }),
+    db.teamInvite.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    }),
+  ])
 
   return (
-    <main>
-      <h1>Settings</h1>
-      <p className="muted" style={{ marginBottom: 24 }}>{organization.name}</p>
+    <main className="max-w-300 mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-sm text-muted-foreground">{organization.name}</p>
+      </div>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Team</CardTitle>
+          <CardDescription>Manage your organization members and invitations.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TeamSection members={members} invites={invites} currentUserId={userId} />
+        </CardContent>
+      </Card>
 
       <StripeConnectSection
         accountId={organization.stripeConnectedAccountId}
@@ -31,19 +60,31 @@ export default async function SettingsPage() {
         lastSyncAt={organization.accountingLastSyncAt}
       />
 
-      <div className="card" style={{ marginTop: 24 }}>
-        <h2>Administration</h2>
-        <p className="muted" style={{ marginBottom: 16 }}>
-          Security and audit tools for organization owners.
-        </p>
-        <Link href="/settings/audit" className="button" style={{ fontSize: 14 }}>
-          View audit log
-        </Link>
-      </div>
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Billing</CardTitle>
+            <CardDescription>
+              {organization.subscriptionPlan} plan — {organization.subscriptionStatus}
+            </CardDescription>
+          </div>
+          <Link href="/settings/billing" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'no-underline')}>
+            Manage billing
+          </Link>
+        </CardHeader>
+      </Card>
 
-      <div style={{ marginTop: 16 }}>
-        <Link href="/dashboard" className="muted" style={{ fontSize: 13 }}>Back to dashboard</Link>
-      </div>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Administration</CardTitle>
+          <CardDescription>Security and audit tools for organization owners.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/settings/audit" className={cn(buttonVariants({ variant: 'outline' }), 'no-underline')}>
+            View audit log
+          </Link>
+        </CardContent>
+      </Card>
     </main>
   )
 }

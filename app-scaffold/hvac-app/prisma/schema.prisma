@@ -55,6 +55,18 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([email])
+}
+
 model Organization {
   id                       String               @id @default(cuid())
   name                     String
@@ -70,6 +82,11 @@ model Organization {
   collectionsOverdue1Days  Int                  @default(7)
   collectionsOverdue2Days  Int                  @default(14)
   collectionsFinalDays     Int                  @default(30)
+  platformFeePercent       Float                @default(2.9)
+  subscriptionStatus       String               @default("trialing")
+  subscriptionPlan         String               @default("starter")
+  subscriptionStripeId     String?
+  trialEndsAt              DateTime?
   accountingProvider       String?
   accountingConnected      Boolean              @default(false)
   accountingLastSyncAt     DateTime?
@@ -84,6 +101,7 @@ model Organization {
   portalTokens             PortalToken[]
   accountingSyncRecords    AccountingSyncRecord[]
   auditLogs                AuditLog[]
+  teamInvites              TeamInvite[]
   assets                   ProofOfWorkAsset[]
   signatures               JobSignature[]
   events                   ActivityEvent[]
@@ -102,6 +120,22 @@ model OrganizationMember {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, userId])
+}
+
+model TeamInvite {
+  id             String       @id @default(cuid())
+  organizationId String
+  email          String
+  role           String       @default("member")
+  token          String       @unique
+  invitedBy      String
+  acceptedAt     DateTime?
+  expiresAt      DateTime
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([token])
 }
 
 model Customer {

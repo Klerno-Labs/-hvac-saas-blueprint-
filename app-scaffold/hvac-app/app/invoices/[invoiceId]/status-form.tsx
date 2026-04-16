@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateInvoiceStatus } from './actions'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
 const STATUSES = [
   { value: 'draft', label: 'Draft' },
@@ -36,31 +38,25 @@ export function InvoiceStatusForm({ invoiceId, currentStatus }: { invoiceId: str
   return (
     <>
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 12, fontSize: 14 }}>{error}</div>
+        <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">{error}</div>
       )}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginTop: 8 }}>
-        <label style={{ flex: 1 }}>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>Status</span>
-          <select name="status" defaultValue={currentStatus} style={inputStyle}>
+      <form onSubmit={handleSubmit} className="flex gap-3 items-end mt-2">
+        <div className="flex-1 space-y-1.5">
+          <Label>Status</Label>
+          <select
+            name="status"
+            defaultValue={currentStatus}
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+          >
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
-        </label>
-        <button type="submit" className="button" disabled={loading} style={{ textAlign: 'center' }}>
+        </div>
+        <Button type="submit" disabled={loading}>
           {loading ? 'Updating...' : 'Update'}
-        </button>
+        </Button>
       </form>
     </>
   )
-}
-
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 12px',
-  marginTop: 4,
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  fontSize: 14,
 }

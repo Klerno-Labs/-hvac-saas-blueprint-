@@ -1,6 +1,9 @@
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { Card, CardContent } from '@/components/ui/card'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default async function PaymentReturnPage({
   params,
@@ -12,7 +15,6 @@ export default async function PaymentReturnPage({
   const { invoiceId } = await params
   const { status: returnStatus } = await searchParams
 
-  // This is a semi-public page — we only show minimal invoice info
   const invoice = await db.invoice.findUnique({
     where: { id: invoiceId },
     select: {
@@ -33,48 +35,49 @@ export default async function PaymentReturnPage({
   const isCancelled = returnStatus === 'cancelled'
 
   return (
-    <main>
-      <div className="card" style={{ maxWidth: 480, margin: '60px auto', textAlign: 'center' }}>
-        {isPaid ? (
-          <>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>&#10003;</div>
-            <h1 style={{ color: '#059669' }}>Payment received</h1>
-            <p className="muted">
-              Invoice #{invoice.invoiceNumber} for {formatCents(invoice.totalCents)} has been paid.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Thank you for your payment to {invoice.organization.name}.
-            </p>
-          </>
-        ) : isCancelled ? (
-          <>
-            <h1>Payment cancelled</h1>
-            <p className="muted">
-              The payment for invoice #{invoice.invoiceNumber} was not completed.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              You can try again or contact {invoice.organization.name} for assistance.
-            </p>
-          </>
-        ) : (
-          <>
-            <h1>Payment processing</h1>
-            <p className="muted">
-              Your payment for invoice #{invoice.invoiceNumber} is being processed.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              The invoice status will update once the payment is confirmed.
-              This usually takes a few seconds.
-            </p>
-          </>
-        )}
+    <main className="flex items-center justify-center min-h-screen p-4">
+      <Card className="w-full max-w-md text-center">
+        <CardContent className="pt-8 pb-8">
+          {isPaid ? (
+            <>
+              <div className="text-5xl mb-4 text-emerald-600">&#10003;</div>
+              <h1 className="text-2xl font-bold text-emerald-600 mb-2">Payment received</h1>
+              <p className="text-muted-foreground">
+                Invoice #{invoice.invoiceNumber} for {formatCents(invoice.totalCents)} has been paid.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Thank you for your payment to {invoice.organization.name}.
+              </p>
+            </>
+          ) : isCancelled ? (
+            <>
+              <h1 className="text-2xl font-bold mb-2">Payment cancelled</h1>
+              <p className="text-muted-foreground">
+                The payment for invoice #{invoice.invoiceNumber} was not completed.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                You can try again or contact {invoice.organization.name} for assistance.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold mb-2">Payment processing</h1>
+              <p className="text-muted-foreground">
+                Your payment for invoice #{invoice.invoiceNumber} is being processed.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                The invoice status will update once the payment is confirmed. This usually takes a few seconds.
+              </p>
+            </>
+          )}
 
-        <div style={{ marginTop: 24 }}>
-          <Link href="/dashboard" className="button" style={{ textAlign: 'center' }}>
-            Go to dashboard
-          </Link>
-        </div>
-      </div>
+          <div className="mt-6">
+            <Link href="/dashboard" className={cn(buttonVariants(), 'no-underline')}>
+              Go to dashboard
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </main>
   )
 }

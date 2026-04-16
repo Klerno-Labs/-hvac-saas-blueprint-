@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ProofOfWorkForm } from './form'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function ProofOfWorkPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { organizationId } = await requireAuth()
@@ -18,36 +19,37 @@ export default async function ProofOfWorkPage({ params }: { params: Promise<{ jo
   }
 
   return (
-    <main>
-      <div style={{ marginBottom: 20 }}>
-        <Link href={`/jobs/${job.id}` as never} className="muted" style={{ fontSize: 13 }}>
-          &larr; Back to job
-        </Link>
-      </div>
+    <main className="max-w-xl mx-auto px-4 py-8">
+      <Link href={`/jobs/${job.id}` as never} className="text-sm text-muted-foreground hover:underline mb-4 inline-block">
+        &larr; Back to job
+      </Link>
 
-      <div className="card" style={{ maxWidth: 600, margin: '0 auto' }}>
-        <h1>Record proof of work</h1>
-        <p className="muted">
-          Job: <strong>{job.title}</strong> — {job.customer.firstName} {job.customer.lastName || ''}
-        </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Record proof of work</CardTitle>
+          <CardDescription>
+            Job: <strong>{job.title}</strong> — {job.customer.firstName} {job.customer.lastName || ''}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {job.workSummary && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-xs font-semibold text-green-700">Proof of work already recorded</p>
+              <p className="text-xs mt-1">You can update the details below.</p>
+            </div>
+          )}
 
-        {job.workSummary && (
-          <div style={{ marginTop: 16, padding: '12px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#059669' }}>Proof of work already recorded</p>
-            <p style={{ fontSize: 13, marginTop: 4 }}>You can update the details below.</p>
-          </div>
-        )}
-
-        <ProofOfWorkForm
-          jobId={job.id}
-          initialData={{
-            workSummary: job.workSummary || '',
-            materialsUsed: job.materialsUsed || '',
-            completionNotes: job.completionNotes || '',
-            technicianName: job.technicianName || '',
-          }}
-        />
-      </div>
+          <ProofOfWorkForm
+            jobId={job.id}
+            initialData={{
+              workSummary: job.workSummary || '',
+              materialsUsed: job.materialsUsed || '',
+              completionNotes: job.completionNotes || '',
+              technicianName: job.technicianName || '',
+            }}
+          />
+        </CardContent>
+      </Card>
     </main>
   )
 }
