@@ -8,16 +8,17 @@ datasource db {
 }
 
 model User {
-  id            String               @id @default(cuid())
-  name          String?
-  email         String?              @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  memberships   OrganizationMember[]
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  id             String               @id @default(cuid())
+  name           String?
+  email          String?              @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  accounts       Account[]
+  sessions       Session[]
+  memberships    OrganizationMember[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 }
 
 model Account {
@@ -65,12 +66,26 @@ model Organization {
   stripeConnectedAccountId String?
   stripeChargesEnabled     Boolean              @default(false)
   stripePayoutsEnabled     Boolean              @default(false)
+  collectionsEnabled       Boolean              @default(false)
+  collectionsOverdue1Days  Int                  @default(7)
+  collectionsOverdue2Days  Int                  @default(14)
+  collectionsFinalDays     Int                  @default(30)
+  accountingProvider       String?
+  accountingConnected      Boolean              @default(false)
+  accountingLastSyncAt     DateTime?
   members                  OrganizationMember[]
   customers                Customer[]
   jobs                     Job[]
   estimates                Estimate[]
   invoices                 Invoice[]
+  payments                 Payment[]
   reminders                Reminder[]
+  collectionAttempts       CollectionAttempt[]
+  portalTokens             PortalToken[]
+  accountingSyncRecords    AccountingSyncRecord[]
+  auditLogs                AuditLog[]
+  assets                   ProofOfWorkAsset[]
+  signatures               JobSignature[]
   events                   ActivityEvent[]
   createdAt                DateTime             @default(now())
   updatedAt                DateTime             @updatedAt
@@ -94,73 +109,152 @@ model Customer {
   organizationId String
   firstName      String
   lastName       String?
+  companyName    String?
   email          String?
   phone          String?
+  addressLine1   String?
+  addressLine2   String?
+  city           String?
+  state          String?
+  postalCode     String?
   notes          String?
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   jobs           Job[]
   invoices       Invoice[]
+  reminders      Reminder[]
+  portalTokens   PortalToken[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+}
+
+model PortalToken {
+  id             String       @id @default(cuid())
+  token          String       @unique
+  organizationId String
+  customerId     String
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer       Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([token])
+  @@index([customerId])
 }
 
 model Job {
-  id             String       @id @default(cuid())
-  organizationId String
-  customerId     String
-  title          String
-  status         String       @default("draft")
-  scheduledFor   DateTime?
-  completedAt    DateTime?
-  technicianName String?
-  notes          String?
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  customer       Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  estimates      Estimate[]
-  invoices       Invoice[]
-  assets         ProofOfWorkAsset[]
-  signatures     JobSignature[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  organizationId  String
+  customerId      String
+  title           String
+  status          String       @default("draft")
+  scheduledFor    DateTime?
+  completedAt     DateTime?
+  technicianName  String?
+  notes           String?
+  workSummary     String?
+  materialsUsed   String?
+  completionNotes String?
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer        Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  estimates       Estimate[]
+  invoices        Invoice[]
+  reminders       Reminder[]
+  assets          ProofOfWorkAsset[]
+  signatures      JobSignature[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([customerId])
 }
 
 model Estimate {
-  id             String       @id @default(cuid())
+  id             String             @id @default(cuid())
   organizationId String
   jobId          String
   estimateNumber String
-  status         String       @default("draft")
-  subtotalCents  Int          @default(0)
-  taxCents       Int          @default(0)
-  totalCents     Int          @default(0)
-  aiDraftUsed    Boolean      @default(false)
+  status         String             @default("draft")
+  scopeOfWork    String?
+  terms          String?
+  notes          String?
+  subtotalCents  Int                @default(0)
+  taxCents       Int                @default(0)
+  totalCents     Int                @default(0)
+  aiDraftUsed    Boolean            @default(false)
   sentAt         DateTime?
   acceptedAt     DateTime?
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  job            Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  job            Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  lineItems      EstimateLineItem[]
+  reminders      Reminder[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([organizationId])
+  @@index([jobId])
+}
+
+model EstimateLineItem {
+  id             String   @id @default(cuid())
+  estimateId     String
+  name           String
+  description    String?
+  quantity       Int      @default(1)
+  unitPriceCents Int      @default(0)
+  lineTotalCents Int      @default(0)
+  sortOrder      Int      @default(0)
+  estimate       Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+
+  @@index([estimateId])
 }
 
 model Invoice {
-  id               String       @id @default(cuid())
-  organizationId   String
-  jobId            String
-  customerId       String
-  invoiceNumber    String
-  status           String       @default("draft")
-  dueDate          DateTime?
-  totalCents       Int          @default(0)
-  outstandingCents Int          @default(0)
-  sentAt           DateTime?
-  paidAt           DateTime?
-  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  job              Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  customer         Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  payments         Payment[]
-  reminders        Reminder[]
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id                       String            @id @default(cuid())
+  organizationId           String
+  jobId                    String
+  customerId               String
+  invoiceNumber            String
+  status                   String            @default("draft")
+  descriptionOfWork        String?
+  notes                    String?
+  subtotalCents            Int               @default(0)
+  taxCents                 Int               @default(0)
+  totalCents               Int               @default(0)
+  outstandingCents         Int               @default(0)
+  dueDate                  DateTime?
+  sentAt                   DateTime?
+  paidAt                   DateTime?
+  stripeCheckoutSessionId  String?              @unique
+  collectionsPaused        Boolean              @default(false)
+  organization             Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  job                      Job                  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  customer                 Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  lineItems                InvoiceLineItem[]
+  payments                 Payment[]
+  reminders                Reminder[]
+  collectionAttempts       CollectionAttempt[]
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+
+  @@index([organizationId])
+  @@index([jobId])
+}
+
+model InvoiceLineItem {
+  id             String  @id @default(cuid())
+  invoiceId      String
+  name           String
+  description    String?
+  quantity       Int     @default(1)
+  unitPriceCents Int     @default(0)
+  lineTotalCents Int     @default(0)
+  sortOrder      Int     @default(0)
+  invoice        Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
 }
 
 model Payment {
@@ -179,17 +273,26 @@ model Payment {
 }
 
 model Reminder {
-  id             String       @id @default(cuid())
+  id             String        @id @default(cuid())
   organizationId String
-  invoiceId      String
-  reminderType   String
-  scheduledFor   DateTime
-  sentAt         DateTime?
-  status         String       @default("pending")
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  invoice        Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  title          String
+  notes          String?
+  reminderType   String        @default("general")
+  status         String        @default("open")
+  dueAt          DateTime?
+  invoiceId      String?
+  jobId          String?
+  customerId     String?
+  estimateId     String?
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoice        Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  job            Job?          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  customer       Customer?     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  estimate       Estimate?     @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
 }
 
 model ProofOfWorkAsset {
@@ -215,14 +318,67 @@ model JobSignature {
   job               Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }
 
-model ActivityEvent {
+model CollectionAttempt {
   id             String       @id @default(cuid())
   organizationId String
+  invoiceId      String
+  stage          String
+  status         String       @default("created")
+  notes          String?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoice        Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([invoiceId, stage])
+  @@index([organizationId])
+  @@index([invoiceId])
+}
+
+model AccountingSyncRecord {
+  id             String       @id @default(cuid())
+  organizationId String
+  entityType     String
+  entityId       String
+  remoteId       String?
+  syncStatus     String       @default("pending")
+  errorMessage   String?
+  lastSyncAt     DateTime?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, entityType, entityId])
+  @@index([organizationId])
+  @@index([syncStatus])
+}
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  actorId        String?
+  actorEmail     String?
+  eventType      String
+  targetType     String?
+  targetId       String?
+  metadata       Json?
+  ipAddress      String?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model ActivityEvent {
+  id             String        @id @default(cuid())
+  organizationId String?
   userId         String?
   eventName      String
   entityType     String?
   entityId       String?
   metadataJson   Json?
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
 }

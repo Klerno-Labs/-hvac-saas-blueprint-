@@ -1,5 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { Providers } from './providers'
+import { NavHeader } from './components/nav-header'
 
 export const metadata: Metadata = {
   title: 'HVAC SaaS',
@@ -9,7 +11,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Providers>
+          <NavHeader />
+          {children}
+        </Providers>
+      </body>
     </html>
   )
 }

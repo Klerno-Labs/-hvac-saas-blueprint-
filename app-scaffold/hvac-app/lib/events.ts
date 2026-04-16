@@ -1,7 +1,8 @@
+import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 
 type EventInput = {
-  organizationId: string
+  organizationId?: string
   userId?: string
   eventName: string
   entityType?: string
@@ -10,5 +11,13 @@ type EventInput = {
 }
 
 export async function trackEvent(input: EventInput) {
-  return db.activityEvent.create({ data: input })
+  const data: Prisma.ActivityEventUncheckedCreateInput = {
+    organizationId: input.organizationId ?? null,
+    userId: input.userId,
+    eventName: input.eventName,
+    entityType: input.entityType,
+    entityId: input.entityId,
+    metadataJson: input.metadataJson as Prisma.InputJsonValue | undefined,
+  }
+  return db.activityEvent.create({ data })
 }
