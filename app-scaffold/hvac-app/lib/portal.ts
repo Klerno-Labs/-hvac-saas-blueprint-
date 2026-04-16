@@ -46,3 +46,38 @@ export function generateTokenString(): string {
 export function defaultTokenExpiry(): Date {
   return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 }
+
+/**
+ * Get or create a valid portal token for a customer and return the portal URL.
+ * Reuses an existing non-expired, non-revoked token if one exists.
+ */
+export async function getOrCreatePortalUrl(
+  organizationId: string,
+  customerId: string,
+): Promise<string> {
+  const existing = await db.portalToken.findFirst({
+    where: {
+      organizationId,
+      customerId,
+      revokedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const token = existing?.token ?? await (async () => {
+    const newToken = generateTokenString()
+    await db.portalToken.create({
+      data: {
+        token: newToken,
+        organizationId,
+        customerId,
+        expiresAt: defaultTokenExpiry(),
+      },
+    })
+    return newToken
+  })()
+
+  const appUrl = process.env.APP_URL || 'http://localhost:3000'
+  return `${appUrl}/portal/${token}`
+}

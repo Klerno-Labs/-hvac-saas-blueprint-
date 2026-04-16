@@ -34,7 +34,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
   const showCollections = invoice.status !== 'draft' && invoice.status !== 'paid' && invoice.status !== 'void'
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <Link href="/invoices" className="text-sm text-muted-foreground hover:underline mb-4 inline-block">
         &larr; All invoices
       </Link>

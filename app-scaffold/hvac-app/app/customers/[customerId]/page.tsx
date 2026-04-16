@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { PortalLinkSection } from './portal-link'
+import { DeleteCustomerButton } from './delete-button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
@@ -13,7 +14,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   const { customerId } = await params
 
   const customer = await db.customer.findFirst({
-    where: { id: customerId, organizationId },
+    where: { id: customerId, organizationId, deletedAt: null },
     include: {
       jobs: { orderBy: { createdAt: 'desc' }, take: 20 },
     },
@@ -24,7 +25,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   }
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <Link href="/customers" className="text-sm text-muted-foreground hover:underline mb-4 inline-block">
         &larr; All customers
       </Link>
@@ -115,6 +116,18 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         </CardHeader>
         <CardContent>
           <PortalLinkSection customerId={customer.id} />
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6 border-destructive/30">
+        <CardHeader>
+          <CardTitle className="text-lg">Danger zone</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-3">
+            Deleting a customer hides them from your lists. Existing jobs and invoices are preserved.
+          </p>
+          <DeleteCustomerButton customerId={customer.id} />
         </CardContent>
       </Card>
     </main>

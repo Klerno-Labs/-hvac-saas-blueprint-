@@ -25,7 +25,7 @@ export default async function SettingsPage() {
   ])
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">{organization.name}</p>

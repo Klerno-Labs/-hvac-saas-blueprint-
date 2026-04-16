@@ -16,7 +16,7 @@ export default async function JobsPage() {
   })
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Jobs</h1>
         <Link href="/jobs/new" className={cn(buttonVariants(), 'no-underline')}>New job</Link>

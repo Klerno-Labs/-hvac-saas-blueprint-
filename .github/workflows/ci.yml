@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app-scaffold/hvac-app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app-scaffold/hvac-app/package-lock.json
+
+      - run: npm ci
+
+      - run: npx prisma generate
+
+      - run: npx tsc --noEmit
+
+      - run: npm run build
+        env:
+          DATABASE_URL: "postgresql://fake:fake@localhost:5432/fake"
+          AUTH_SECRET: "ci-secret-not-real"
+          SKIP_ENV_VALIDATION: "true"
+
+      - run: npm test -- --run --reporter=verbose
+        if: hashFiles('app-scaffold/hvac-app/vitest.config.*') != ''

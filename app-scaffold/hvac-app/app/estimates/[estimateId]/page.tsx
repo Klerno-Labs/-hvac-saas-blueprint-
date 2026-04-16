@@ -26,7 +26,7 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
   const isDraft = estimate.status === 'draft'
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <div className="mb-5">
         <Link href="/estimates" className="text-xs text-muted-foreground hover:underline">
           &larr; All estimates

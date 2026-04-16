@@ -73,16 +73,14 @@ export async function deleteCustomer(customerId: string): Promise<ActionResult> 
   if (!membership) return { success: false, error: 'You must belong to an organization' }
 
   const customer = await db.customer.findFirst({
-    where: { id: customerId, organizationId: membership.organizationId },
-    include: { _count: { select: { jobs: true, invoices: true } } },
+    where: { id: customerId, organizationId: membership.organizationId, deletedAt: null },
   })
   if (!customer) return { success: false, error: 'Customer not found' }
 
-  if (customer._count.jobs > 0 || customer._count.invoices > 0) {
-    return { success: false, error: `Cannot delete customer with ${customer._count.jobs} job(s) and ${customer._count.invoices} invoice(s). Remove linked records first.` }
-  }
-
-  await db.customer.delete({ where: { id: customerId } })
+  await db.customer.update({
+    where: { id: customerId },
+    data: { deletedAt: new Date() },
+  })
 
   await trackEvent({
     organizationId: membership.organizationId,

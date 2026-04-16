@@ -8,7 +8,7 @@ export default async function EditCustomerPage({ params }: { params: Promise<{ c
   const { customerId } = await params
 
   const customer = await db.customer.findFirst({
-    where: { id: customerId, organizationId },
+    where: { id: customerId, organizationId, deletedAt: null },
   })
 
   if (!customer) {

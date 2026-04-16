@@ -59,8 +59,8 @@ export default async function HomePage() {
             <div className="relative hidden md:block">
               <div className="rounded-2xl overflow-hidden shadow-2xl border">
                 <Image
-                  src="https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&h=600&fit=crop"
-                  alt="Residential air conditioning outdoor unit"
+                  src="/images/hero.jpg"
+                  alt="HVAC technician at work"
                   width={800}
                   height={600}
                   className="w-full h-auto"
@@ -162,8 +162,8 @@ export default async function HomePage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="rounded-2xl overflow-hidden shadow-xl border">
               <Image
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=600&fit=crop"
-                alt="Technician working on HVAC system"
+                src="/images/features.jpg"
+                alt="HVAC technician servicing a unit"
                 width={800}
                 height={600}
                 className="w-full h-auto"
@@ -266,8 +266,8 @@ export default async function HomePage() {
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
           <div className="rounded-2xl overflow-hidden shadow-lg border mb-8 max-w-2xl mx-auto">
             <Image
-              src="https://images.unsplash.com/photo-1631545806609-34c2da663a82?w=800&h=400&fit=crop"
-              alt="Air conditioning units on residential building"
+              src="/images/trust.jpg"
+              alt="Residential HVAC installation"
               width={800}
               height={400}
               className="w-full h-auto"

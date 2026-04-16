@@ -36,7 +36,7 @@ export default async function ReportsPage() {
   const syncSummary = syncRecords.reduce((acc, r) => { acc[r.syncStatus] = r._count; return acc }, {} as Record<string, number>)
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
         <p className="text-sm text-muted-foreground">{organization.name}</p>

@@ -157,6 +157,7 @@ model Customer {
   invoices       Invoice[]
   reminders      Reminder[]
   portalTokens   PortalToken[]
+  deletedAt      DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

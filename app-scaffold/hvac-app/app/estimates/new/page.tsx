@@ -22,7 +22,7 @@ export default async function NewEstimatePage({ searchParams }: { searchParams: 
   }
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <Card className="max-w-175 mx-auto">
         <CardHeader>
           <CardTitle className="text-xl">New estimate</CardTitle>

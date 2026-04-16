@@ -1,5 +1,7 @@
 import { db } from '@/lib/db'
 import { trackEvent } from '@/lib/events'
+import { sendCollectionEmail } from '@/lib/email'
+import { getOrCreatePortalUrl } from '@/lib/portal'
 import { COLLECTION_STAGES, type CollectionStage } from '@/lib/validations/collections'
 
 type RunResult = {
@@ -43,6 +45,7 @@ export async function runCollectionsAutomation(): Promise<RunResult> {
       },
       include: {
         collectionAttempts: true,
+        customer: true,
       },
     })
 
@@ -79,6 +82,22 @@ export async function runCollectionsAutomation(): Promise<RunResult> {
                 notes: `Auto-created: ${daysPastDue} days past due`,
               },
             })
+
+            // Send collection email to customer
+            const customerEmail = invoice.customer.email
+            if (customerEmail) {
+              const portalUrl = await getOrCreatePortalUrl(org.id, invoice.customer.id)
+              await sendCollectionEmail({
+                to: customerEmail,
+                customerName: [invoice.customer.firstName, invoice.customer.lastName].filter(Boolean).join(' '),
+                invoiceNumber: invoice.invoiceNumber,
+                totalFormatted: '$' + (invoice.outstandingCents / 100).toFixed(2),
+                orgName: (await db.organization.findUniqueOrThrow({ where: { id: org.id } })).name,
+                portalUrl,
+                dueDate: invoice.dueDate?.toLocaleDateString(),
+                stage,
+              })
+            }
 
             await trackEvent({
               organizationId: org.id,

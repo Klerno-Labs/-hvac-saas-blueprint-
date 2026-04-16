@@ -9,12 +9,12 @@ export default async function CustomersPage() {
   const { organizationId } = await requireAuth()
 
   const customers = await db.customer.findMany({
-    where: { organizationId },
+    where: { organizationId, deletedAt: null },
     orderBy: { createdAt: 'desc' },
   })
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Customers</h1>
         <Link href="/customers/new" className={cn(buttonVariants(), 'no-underline')}>

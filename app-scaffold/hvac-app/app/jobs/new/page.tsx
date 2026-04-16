@@ -9,7 +9,7 @@ export default async function NewJobPage({ searchParams }: { searchParams: Promi
   const { customerId } = await searchParams
 
   const customers = await db.customer.findMany({
-    where: { organizationId },
+    where: { organizationId, deletedAt: null },
     orderBy: { firstName: 'asc' },
     select: { id: true, firstName: true, lastName: true, companyName: true },
   })

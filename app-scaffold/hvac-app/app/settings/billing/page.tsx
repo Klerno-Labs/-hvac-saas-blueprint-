@@ -11,7 +11,7 @@ export default async function BillingPage() {
   const isActive = isSubscriptionActive(organization)
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <div className="mb-8">
         <Link href="/settings" className="text-sm text-muted-foreground hover:underline mb-4 inline-block">
           &larr; Back to settings

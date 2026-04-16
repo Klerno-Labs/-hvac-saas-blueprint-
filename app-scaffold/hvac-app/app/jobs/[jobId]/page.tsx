@@ -26,7 +26,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
   }
 
   return (
-    <main className="max-w-300 mx-auto px-4 py-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-8">
       <Link href="/jobs" className="text-sm text-muted-foreground hover:underline mb-4 inline-block">
         &larr; All jobs
       </Link>

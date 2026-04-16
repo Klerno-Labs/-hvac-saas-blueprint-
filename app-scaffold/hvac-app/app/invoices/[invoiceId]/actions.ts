@@ -5,6 +5,8 @@ import { db } from '@/lib/db'
 import { trackEvent } from '@/lib/events'
 import { logAudit } from '@/lib/audit'
 import { updateInvoiceSchema, updateInvoiceStatusSchema } from '@/lib/validations/invoice'
+import { getOrCreatePortalUrl } from '@/lib/portal'
+import { sendInvoiceEmail } from '@/lib/email'
 
 type ActionResult =
   | { success: true }
@@ -117,6 +119,7 @@ export async function updateInvoiceStatus(
 
   const invoice = await db.invoice.findFirst({
     where: { id: invoiceId, organizationId },
+    include: { customer: true },
   })
   if (!invoice) {
     return { success: false, error: 'Invoice not found in your organization' }
@@ -140,6 +143,24 @@ export async function updateInvoiceStatus(
       stripeCheckoutSessionId: status === 'void' ? null : invoice.stripeCheckoutSessionId,
     },
   })
+
+  // Send email when marking as sent
+  const customerEmail = invoice.customer.email
+  if (status === 'sent' && customerEmail) {
+    const customer = invoice.customer
+    const org = await db.organization.findUniqueOrThrow({ where: { id: organizationId } })
+    const portalUrl = await getOrCreatePortalUrl(organizationId, customer.id)
+
+    await sendInvoiceEmail({
+      to: customerEmail,
+      customerName: [customer.firstName, customer.lastName].filter(Boolean).join(' '),
+      invoiceNumber: invoice.invoiceNumber,
+      totalFormatted: '$' + (invoice.totalCents / 100).toFixed(2),
+      orgName: org.name,
+      portalUrl,
+      dueDate: invoice.dueDate ? invoice.dueDate.toLocaleDateString() : undefined,
+    })
+  }
 
   await trackEvent({
     organizationId,

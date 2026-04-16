@@ -108,6 +108,45 @@ export async function sendEstimateEmail(params: {
 }
 
 /**
+ * Send a collection reminder email for overdue invoices.
+ */
+export async function sendCollectionEmail(params: {
+  to: string
+  customerName: string
+  invoiceNumber: string
+  totalFormatted: string
+  orgName: string
+  portalUrl?: string
+  dueDate?: string
+  stage: 'overdue_1' | 'overdue_2' | 'final_notice'
+}): Promise<SendResult> {
+  const stageText = {
+    overdue_1: { subject: 'Friendly reminder', heading: 'Payment Reminder', message: 'This is a friendly reminder that the following invoice is past due.' },
+    overdue_2: { subject: 'Second reminder', heading: 'Second Payment Reminder', message: 'We noticed your invoice is still outstanding. Please arrange payment at your earliest convenience.' },
+    final_notice: { subject: 'Final notice', heading: 'Final Payment Notice', message: 'This is a final notice regarding your overdue invoice. Please arrange payment immediately to avoid further action.' },
+  }[params.stage]
+
+  const payLink = params.portalUrl
+    ? `<p><a href="${params.portalUrl}" style="display:inline-block;background:#0f766e;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Pay Now</a></p>`
+    : ''
+
+  return sendEmail({
+    to: params.to,
+    subject: `${stageText.subject}: Invoice #${params.invoiceNumber} from ${params.orgName}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#0f766e;">${stageText.heading}</h2>
+        <p>Hi ${params.customerName},</p>
+        <p>${stageText.message}</p>
+        <p><strong>Invoice #${params.invoiceNumber}</strong> — ${params.totalFormatted}${params.dueDate ? ` (due ${params.dueDate})` : ''}</p>
+        ${payLink}
+        <p style="color:#6b7280;font-size:13px;margin-top:24px;">If you've already paid, please disregard this notice. Questions? Contact ${params.orgName} directly.</p>
+      </div>
+    `,
+  })
+}
+
+/**
  * Send a password reset email.
  */
 export async function sendPasswordResetEmail(params: {

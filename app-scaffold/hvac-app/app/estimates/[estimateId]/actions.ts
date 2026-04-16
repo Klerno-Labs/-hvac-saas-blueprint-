@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { trackEvent } from '@/lib/events'
 import { updateEstimateSchema, updateEstimateStatusSchema } from '@/lib/validations/estimate'
+import { getOrCreatePortalUrl } from '@/lib/portal'
+import { sendEstimateEmail } from '@/lib/email'
 
 type ActionResult =
   | { success: true }
@@ -115,6 +117,9 @@ export async function updateEstimateStatus(
 
   const estimate = await db.estimate.findFirst({
     where: { id: estimateId, organizationId },
+    include: {
+      job: { include: { customer: true } },
+    },
   })
   if (!estimate) {
     return { success: false, error: 'Estimate not found in your organization' }
@@ -135,6 +140,23 @@ export async function updateEstimateStatus(
       acceptedAt: status === 'accepted' && !estimate.acceptedAt ? new Date() : estimate.acceptedAt,
     },
   })
+
+  // Send email when marking as sent
+  const customerEmail = estimate.job.customer.email
+  if (status === 'sent' && customerEmail) {
+    const customer = estimate.job.customer
+    const org = await db.organization.findUniqueOrThrow({ where: { id: organizationId } })
+    const portalUrl = await getOrCreatePortalUrl(organizationId, customer.id)
+
+    await sendEstimateEmail({
+      to: customerEmail,
+      customerName: [customer.firstName, customer.lastName].filter(Boolean).join(' '),
+      estimateNumber: estimate.estimateNumber,
+      totalFormatted: '$' + (estimate.totalCents / 100).toFixed(2),
+      orgName: org.name,
+      portalUrl,
+    })
+  }
 
   await trackEvent({
     organizationId,

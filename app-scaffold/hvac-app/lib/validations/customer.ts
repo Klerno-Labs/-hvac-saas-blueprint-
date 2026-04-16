@@ -15,3 +15,7 @@ export const createCustomerSchema = z.object({
 })
 
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>
+
+export const updateCustomerSchema = createCustomerSchema
+
+export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>
