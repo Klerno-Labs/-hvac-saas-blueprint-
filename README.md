@@ -33,4 +33,3 @@ No stage advances until its gate issue is closed with evidence.
 - No adding features outside the active stage unless the gate issue explicitly allows it.
 - No calling something validated without attached evidence.
 - No expanding into fintech layers before the payments stage gate is passed.
-
