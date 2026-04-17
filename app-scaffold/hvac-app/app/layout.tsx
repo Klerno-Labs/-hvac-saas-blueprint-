@@ -77,6 +77,9 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: SITE_URL },
   category: 'business software',
+  verification: {
+    google: 'SRi7UiAJOXVpe8bFWXO4ufcDfSY6YtTht7GC-wcwoPk',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
