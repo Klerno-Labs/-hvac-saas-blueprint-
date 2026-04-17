@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export default async function PortalEstimateDetailPage({
@@ -147,6 +148,12 @@ export default async function PortalEstimateDetailPage({
             )}
           </CardContent>
         </Card>
+
+        <div className="text-center mt-4">
+          <a href={`/api/estimates/${estimate.id}/pdf?token=${token}`} className={cn(buttonVariants({ variant: 'outline' }), 'no-underline')}>
+            Download PDF
+          </a>
+        </div>
       </div>
     </main>
   )

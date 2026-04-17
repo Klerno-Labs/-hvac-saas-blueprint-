@@ -8,6 +8,8 @@ import { PayButton } from './pay-button'
 import { CollectionsSection } from './collections-section'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ invoiceId: string }> }) {
   const { organizationId, organization } = await requireActiveSubscription()
@@ -173,7 +175,12 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
       )}
 
       <Card className="mb-4">
-        <CardHeader><CardTitle className="text-lg">Update status</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg">Update status</CardTitle>
+          <a href={`/api/invoices/${invoice.id}/pdf`} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'no-underline')}>
+            Download PDF
+          </a>
+        </CardHeader>
         <CardContent>
           <InvoiceStatusForm invoiceId={invoice.id} currentStatus={invoice.status} />
         </CardContent>

@@ -6,6 +6,8 @@ import { EstimateStatusForm } from './status-form'
 import { EstimateEditForm } from './edit-form'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default async function EstimateDetailPage({ params }: { params: Promise<{ estimateId: string }> }) {
   const { organizationId } = await requireActiveSubscription()
@@ -128,8 +130,11 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
       </Card>
 
       <Card className="mb-4">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Update status</CardTitle>
+          <a href={`/api/estimates/${estimate.id}/pdf`} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'no-underline')}>
+            Download PDF
+          </a>
         </CardHeader>
         <CardContent>
           <EstimateStatusForm estimateId={estimate.id} currentStatus={estimate.status} />

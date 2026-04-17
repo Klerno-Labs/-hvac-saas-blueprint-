@@ -91,6 +91,11 @@ model Organization {
   accountingProvider       String?
   accountingConnected      Boolean              @default(false)
   accountingLastSyncAt     DateTime?
+  referralCode             String?              @unique
+  referralCredits          Int                  @default(0)
+  referredByOrgId          String?
+  referredByOrg            Organization?        @relation("ReferredBy", fields: [referredByOrgId], references: [id])
+  referrals                Organization[]       @relation("ReferredBy")
   members                  OrganizationMember[]
   customers                Customer[]
   jobs                     Job[]

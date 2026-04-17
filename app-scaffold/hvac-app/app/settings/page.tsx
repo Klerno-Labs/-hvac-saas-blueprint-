@@ -78,6 +78,20 @@ export default async function SettingsPage() {
       </Card>
 
       <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Referrals</CardTitle>
+            <CardDescription>
+              Invite other shops and earn free months.
+            </CardDescription>
+          </div>
+          <Link href="/settings/referrals" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'no-underline')}>
+            View referrals
+          </Link>
+        </CardHeader>
+      </Card>
+
+      <Card className="mt-6">
         <CardHeader>
           <CardTitle>Administration</CardTitle>
           <CardDescription>Security and audit tools for organization owners.</CardDescription>

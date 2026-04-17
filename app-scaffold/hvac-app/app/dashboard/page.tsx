@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { GettingStartedChecklist } from '@/app/components/getting-started-checklist'
 
 export default async function DashboardPage() {
   const { organization, organizationId } = await requireActiveSubscription()
@@ -60,6 +61,10 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">{organization.name}</p>
       </div>
+
+      {organization.onboardingStatus !== 'completed' && (
+        <GettingStartedChecklist organizationId={organizationId} />
+      )}
 
       {/* Metric cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

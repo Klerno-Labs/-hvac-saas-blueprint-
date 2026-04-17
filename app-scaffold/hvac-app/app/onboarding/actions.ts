@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { trackEvent } from '@/lib/events'
 import { createOrganizationSchema } from '@/lib/validations/onboarding'
+import { cookies } from 'next/headers'
+import { randomBytes } from 'crypto'
 
 type OnboardingResult =
   | { success: true; organizationId: string }
@@ -47,10 +49,20 @@ export async function createOrganization(formData: FormData): Promise<Onboarding
     entityId: userId,
   })
 
+  // Check for referral code from cookie (set during signup with ?ref=)
+  const cookieStore = await cookies()
+  const refCode = cookieStore.get('fc_ref')?.value
+  let referredByOrgId: string | null = null
+  if (refCode) {
+    const referringOrg = await db.organization.findUnique({ where: { referralCode: refCode } })
+    if (referringOrg) referredByOrgId = referringOrg.id
+  }
+
   // Create organization + owner membership in a transaction
   const organization = await db.$transaction(async (tx) => {
     const trialEndsAt = new Date()
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14)
+    // Referred orgs get +30 days bonus trial
+    trialEndsAt.setDate(trialEndsAt.getDate() + (referredByOrgId ? 44 : 14))
 
     const org = await tx.organization.create({
       data: {
@@ -58,8 +70,10 @@ export async function createOrganization(formData: FormData): Promise<Onboarding
         phone: phone || null,
         email: email || null,
         timezone: timezone || null,
-        onboardingStatus: 'completed',
+        onboardingStatus: 'not_started',
         trialEndsAt,
+        referralCode: randomBytes(6).toString('hex'),
+        referredByOrgId,
       },
     })
 
@@ -72,8 +86,21 @@ export async function createOrganization(formData: FormData): Promise<Onboarding
       },
     })
 
+    // Credit the referring org with 1 month of service
+    if (referredByOrgId) {
+      await tx.organization.update({
+        where: { id: referredByOrgId },
+        data: { referralCredits: { increment: 1 } },
+      })
+    }
+
     return org
   })
+
+  // Clear the referral cookie
+  if (refCode) {
+    cookieStore.delete('fc_ref')
+  }
 
   await trackEvent({
     organizationId: organization.id,

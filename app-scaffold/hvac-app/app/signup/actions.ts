@@ -3,6 +3,7 @@
 import { db } from '@/lib/db'
 import { trackEvent } from '@/lib/events'
 import { signupSchema } from '@/lib/validations/auth'
+import { cookies } from 'next/headers'
 import bcrypt from 'bcryptjs'
 
 type SignupResult =
@@ -22,6 +23,19 @@ export async function signup(formData: FormData): Promise<SignupResult> {
   }
 
   const { name, email, password } = parsed.data
+
+  // Persist referral code from form (passed via hidden input) into a cookie
+  // that survives until onboarding completes
+  const ref = formData.get('ref')
+  if (typeof ref === 'string' && ref.length > 0 && ref.length < 100) {
+    const cookieStore = await cookies()
+    cookieStore.set('fc_ref', ref, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30,
+      path: '/',
+    })
+  }
 
   const existing = await db.user.findUnique({ where: { email } })
   if (existing) {

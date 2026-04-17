@@ -173,6 +173,12 @@ export default async function PortalInvoiceDetailPage({
             </CardContent>
           </Card>
         )}
+
+        <div className="text-center">
+          <a href={`/api/invoices/${invoice.id}/pdf?token=${token}`} className={cn(buttonVariants({ variant: 'outline' }), 'no-underline')}>
+            Download PDF
+          </a>
+        </div>
       </div>
     </main>
   )

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signup } from './actions'
 import { Button } from '@/components/ui/button'
@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function SignupPage() {
+function SignupInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const ref = searchParams.get('ref') || ''
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -44,7 +46,14 @@ export default function SignupPage() {
             </div>
           )}
 
+          {ref && (
+            <div className="text-sm text-primary mb-4 p-3 bg-primary/10 rounded-lg">
+              🎉 You&apos;re signing up with a referral — get 30 extra days free.
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
+            {ref && <input type="hidden" name="ref" value={ref} />}
             <div className="space-y-2">
               <Label htmlFor="name">Full name</Label>
               <Input id="name" name="name" type="text" required autoComplete="name" />
@@ -71,5 +80,13 @@ export default function SignupPage() {
         </CardContent>
       </Card>
     </main>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md h-96 animate-pulse bg-muted rounded-xl mx-auto mt-20" />}>
+      <SignupInner />
+    </Suspense>
   )
 }

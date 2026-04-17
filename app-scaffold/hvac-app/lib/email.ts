@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { renderEmail } from './email-template'
 
 let _resend: Resend | null = null
 
@@ -45,9 +46,6 @@ export async function sendEmail(params: {
   }
 }
 
-/**
- * Send an invoice to a customer via email with a portal payment link.
- */
 export async function sendInvoiceEmail(params: {
   to: string
   customerName: string
@@ -57,29 +55,26 @@ export async function sendInvoiceEmail(params: {
   portalUrl?: string
   dueDate?: string
 }): Promise<SendResult> {
-  const payLink = params.portalUrl
-    ? `<p><a href="${params.portalUrl}" style="display:inline-block;background:#0f766e;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">View &amp; Pay Invoice</a></p>`
-    : ''
+  const body = `
+    <p>Hi ${params.customerName},</p>
+    <p><strong>${params.orgName}</strong> has sent you an invoice for <strong>${params.totalFormatted}</strong>.</p>
+    ${params.dueDate ? `<p style="color:#64748b;">Payment due: <strong>${params.dueDate}</strong></p>` : ''}
+    <p>You can view and pay this invoice securely online.</p>
+  `
 
   return sendEmail({
     to: params.to,
     subject: `Invoice #${params.invoiceNumber} from ${params.orgName}`,
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
-        <h2 style="color:#0f766e;">Invoice #${params.invoiceNumber}</h2>
-        <p>Hi ${params.customerName},</p>
-        <p>${params.orgName} has sent you an invoice for <strong>${params.totalFormatted}</strong>.</p>
-        ${params.dueDate ? `<p>Due date: ${params.dueDate}</p>` : ''}
-        ${payLink}
-        <p style="color:#6b7280;font-size:13px;margin-top:24px;">If you have questions, contact ${params.orgName} directly.</p>
-      </div>
-    `,
+    html: renderEmail({
+      title: `Invoice #${params.invoiceNumber}`,
+      preheader: `${params.totalFormatted} invoice from ${params.orgName}`,
+      body,
+      cta: params.portalUrl ? { label: 'View & Pay Invoice', url: params.portalUrl } : undefined,
+      footer: `Questions? Contact ${params.orgName} directly.`,
+    }),
   })
 }
 
-/**
- * Send an estimate to a customer via email with a portal link.
- */
 export async function sendEstimateEmail(params: {
   to: string
   customerName: string
@@ -88,28 +83,25 @@ export async function sendEstimateEmail(params: {
   orgName: string
   portalUrl?: string
 }): Promise<SendResult> {
-  const viewLink = params.portalUrl
-    ? `<p><a href="${params.portalUrl}" style="display:inline-block;background:#0f766e;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">View Estimate</a></p>`
-    : ''
+  const body = `
+    <p>Hi ${params.customerName},</p>
+    <p><strong>${params.orgName}</strong> has prepared an estimate for you totaling <strong>${params.totalFormatted}</strong>.</p>
+    <p>Review the details and approve it online whenever you're ready.</p>
+  `
 
   return sendEmail({
     to: params.to,
     subject: `Estimate #${params.estimateNumber} from ${params.orgName}`,
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
-        <h2 style="color:#0f766e;">Estimate #${params.estimateNumber}</h2>
-        <p>Hi ${params.customerName},</p>
-        <p>${params.orgName} has sent you an estimate for <strong>${params.totalFormatted}</strong>.</p>
-        ${viewLink}
-        <p style="color:#6b7280;font-size:13px;margin-top:24px;">If you have questions, contact ${params.orgName} directly.</p>
-      </div>
-    `,
+    html: renderEmail({
+      title: `Estimate #${params.estimateNumber}`,
+      preheader: `${params.totalFormatted} estimate from ${params.orgName}`,
+      body,
+      cta: params.portalUrl ? { label: 'View Estimate', url: params.portalUrl } : undefined,
+      footer: `Questions? Contact ${params.orgName} directly.`,
+    }),
   })
 }
 
-/**
- * Send a collection reminder email for overdue invoices.
- */
 export async function sendCollectionEmail(params: {
   to: string
   customerName: string
@@ -121,70 +113,69 @@ export async function sendCollectionEmail(params: {
   stage: 'overdue_1' | 'overdue_2' | 'final_notice'
 }): Promise<SendResult> {
   const stageText = {
-    overdue_1: { subject: 'Friendly reminder', heading: 'Payment Reminder', message: 'This is a friendly reminder that the following invoice is past due.' },
-    overdue_2: { subject: 'Second reminder', heading: 'Second Payment Reminder', message: 'We noticed your invoice is still outstanding. Please arrange payment at your earliest convenience.' },
-    final_notice: { subject: 'Final notice', heading: 'Final Payment Notice', message: 'This is a final notice regarding your overdue invoice. Please arrange payment immediately to avoid further action.' },
+    overdue_1: { title: 'Friendly Payment Reminder', message: "This is a friendly reminder that your invoice is past due. If you've already paid, please disregard this notice." },
+    overdue_2: { title: 'Second Payment Reminder', message: 'Your invoice remains unpaid. Please arrange payment at your earliest convenience to avoid late fees.' },
+    final_notice: { title: 'Final Payment Notice', message: 'This is a final notice regarding your overdue invoice. Please arrange payment immediately to avoid further action.' },
   }[params.stage]
 
-  const payLink = params.portalUrl
-    ? `<p><a href="${params.portalUrl}" style="display:inline-block;background:#0f766e;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Pay Now</a></p>`
-    : ''
+  const body = `
+    <p>Hi ${params.customerName},</p>
+    <p>${stageText.message}</p>
+    <p><strong>Invoice #${params.invoiceNumber}</strong> — ${params.totalFormatted}${params.dueDate ? ` (was due ${params.dueDate})` : ''}</p>
+  `
 
   return sendEmail({
     to: params.to,
-    subject: `${stageText.subject}: Invoice #${params.invoiceNumber} from ${params.orgName}`,
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
-        <h2 style="color:#0f766e;">${stageText.heading}</h2>
-        <p>Hi ${params.customerName},</p>
-        <p>${stageText.message}</p>
-        <p><strong>Invoice #${params.invoiceNumber}</strong> — ${params.totalFormatted}${params.dueDate ? ` (due ${params.dueDate})` : ''}</p>
-        ${payLink}
-        <p style="color:#6b7280;font-size:13px;margin-top:24px;">If you've already paid, please disregard this notice. Questions? Contact ${params.orgName} directly.</p>
-      </div>
-    `,
+    subject: `${stageText.title}: Invoice #${params.invoiceNumber} from ${params.orgName}`,
+    html: renderEmail({
+      title: stageText.title,
+      preheader: `Invoice #${params.invoiceNumber} — ${params.totalFormatted} outstanding`,
+      body,
+      cta: params.portalUrl ? { label: 'Pay Now', url: params.portalUrl } : undefined,
+      footer: `Questions? Contact ${params.orgName} directly.`,
+    }),
   })
 }
 
-/**
- * Send a password reset email.
- */
 export async function sendPasswordResetEmail(params: {
   to: string
   resetUrl: string
 }): Promise<SendResult> {
+  const body = `
+    <p>We received a request to reset your FieldClose password.</p>
+    <p style="color:#64748b;font-size:13px;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+  `
+
   return sendEmail({
     to: params.to,
     subject: 'Reset your FieldClose password',
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
-        <h2>Reset your password</h2>
-        <p>Click the link below to reset your password. This link expires in 1 hour.</p>
-        <p><a href="${params.resetUrl}" style="display:inline-block;background:#0f766e;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Reset Password</a></p>
-        <p style="color:#6b7280;font-size:13px;margin-top:24px;">If you didn't request this, you can safely ignore this email.</p>
-      </div>
-    `,
+    html: renderEmail({
+      title: 'Reset your password',
+      body,
+      cta: { label: 'Reset Password', url: params.resetUrl },
+    }),
   })
 }
 
-/**
- * Send a team invite email.
- */
 export async function sendTeamInviteEmail(params: {
   to: string
   orgName: string
   inviterName: string
   signupUrl: string
 }): Promise<SendResult> {
+  const body = `
+    <p>${params.inviterName} has invited you to join <strong>${params.orgName}</strong> on FieldClose.</p>
+    <p>FieldClose helps HVAC teams track jobs, send estimates, invoice customers, and get paid — all in one place.</p>
+  `
+
   return sendEmail({
     to: params.to,
     subject: `You've been invited to ${params.orgName} on FieldClose`,
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
-        <h2>You're invited!</h2>
-        <p>${params.inviterName} has invited you to join <strong>${params.orgName}</strong> on FieldClose.</p>
-        <p><a href="${params.signupUrl}" style="display:inline-block;background:#0f766e;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Accept Invitation</a></p>
-      </div>
-    `,
+    html: renderEmail({
+      title: `Join ${params.orgName} on FieldClose`,
+      preheader: `${params.inviterName} invited you to collaborate`,
+      body,
+      cta: { label: 'Accept Invitation', url: params.signupUrl },
+    }),
   })
 }
