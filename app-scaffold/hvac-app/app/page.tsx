@@ -8,6 +8,57 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 
+const SITE_URL = process.env.APP_URL || 'https://fieldclose.app'
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'FieldClose',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  description: 'The quote-to-payment operating system for residential HVAC businesses. Send estimates, complete jobs, invoice customers, and collect payment in one workflow.',
+  url: SITE_URL,
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Starter',
+      price: '49',
+      priceCurrency: 'USD',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: '49',
+        priceCurrency: 'USD',
+        unitText: 'MONTH',
+      },
+    },
+    {
+      '@type': 'Offer',
+      name: 'Pro',
+      price: '99',
+      priceCurrency: 'USD',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: '99',
+        priceCurrency: 'USD',
+        unitText: 'MONTH',
+      },
+    },
+  ],
+  aggregateRating: undefined,
+  featureList: [
+    'AI-powered estimate drafting',
+    'Customer management',
+    'Job tracking and scheduling',
+    'One-click invoicing',
+    'Stripe payment collection',
+    'Automated collections',
+    'Customer portal',
+    'Financial reports',
+    'Inventory tracking',
+    'Recurring maintenance contracts',
+  ],
+}
+
 export default async function HomePage() {
   const session = await getOptionalSession()
   if (session?.membership) {
@@ -16,6 +67,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Nav */}
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between h-16 px-4">

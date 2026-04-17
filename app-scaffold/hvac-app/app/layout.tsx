@@ -9,9 +9,74 @@ import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
+const SITE_URL = process.env.APP_URL || 'https://fieldclose.app'
+
 export const metadata: Metadata = {
-  title: 'FieldClose — Get Paid Faster on Every HVAC Job',
-  description: 'The quote-to-payment operating system for residential HVAC businesses. Estimates, invoices, payments, and collections in one workflow.',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'FieldClose — Get Paid Faster on Every HVAC Job',
+    template: '%s · FieldClose',
+  },
+  description: 'The quote-to-payment operating system for residential HVAC businesses. Send estimates, complete jobs, invoice customers, and collect payment — all in one workflow.',
+  applicationName: 'FieldClose',
+  keywords: [
+    'HVAC software',
+    'HVAC invoicing',
+    'HVAC estimates',
+    'field service management',
+    'HVAC CRM',
+    'HVAC quote to payment',
+    'contractor software',
+    'HVAC payments',
+    'HVAC collections',
+    'small business HVAC',
+  ],
+  authors: [{ name: 'FieldClose' }],
+  creator: 'FieldClose',
+  publisher: 'FieldClose',
+  formatDetection: { email: false, address: false, telephone: false },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: SITE_URL,
+    siteName: 'FieldClose',
+    title: 'FieldClose — Get Paid Faster on Every HVAC Job',
+    description: 'The quote-to-payment operating system for residential HVAC businesses. Estimates, invoices, payments, and collections in one workflow.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'FieldClose — Get Paid Faster on Every HVAC Job',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FieldClose — Get Paid Faster on Every HVAC Job',
+    description: 'The quote-to-payment operating system for residential HVAC businesses.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+  },
+  alternates: { canonical: SITE_URL },
+  category: 'business software',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
