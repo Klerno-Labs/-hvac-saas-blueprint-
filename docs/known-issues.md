@@ -1,80 +1,78 @@
 # Known Issues and Launch Risks
 
-Honest assessment of the current implementation state as of the completion of Features 1-11.
+Updated assessment as of the completion of all pre-launch work.
 
 ## Launch Blockers
-
-### Database Migrations Not Applied
-- **Risk**: High
-- **Status**: All schema changes exist in `prisma/schema.prisma` but no migrations have been run against a real database.
-- **Action required**: Run `npx prisma migrate dev` in development, then `npx prisma migrate deploy` in production before launch.
-
-### AUTH_SECRET Must Be Changed
-- **Risk**: High
-- **Status**: The `.env.example` contains a placeholder value `replace-me-with-openssl-rand-base64-32`.
-- **Action required**: Generate a secure secret with `openssl rand -base64 32` and set it in production env.
 
 ### Stripe Webhook Must Be Configured
 - **Risk**: High (payment flow)
 - **Status**: Webhook endpoint exists at `/api/stripe/webhook` but requires Stripe Dashboard configuration.
-- **Action required**: Create webhook in Stripe Dashboard pointing to `https://yourdomain.com/api/stripe/webhook` with events: `checkout.session.completed`, `checkout.session.expired`, `account.updated`.
+- **Action required**: Create webhook in Stripe Dashboard pointing to `https://yourdomain.com/api/stripe/webhook` with events: `checkout.session.completed`, `checkout.session.expired`, `account.updated`. Set the signing secret as `STRIPE_WEBHOOK_SECRET`.
+
+### Production Environment Variables
+- **Risk**: High
+- **Status**: `.env` is configured for local development. Production deployment requires setting `AUTH_URL`, `APP_URL`, and switching Stripe keys to live mode.
+- **Action required**: See `docs/deploy-vercel.md` for the full checklist.
+
+## Resolved (Previously Blockers)
+
+### ~~Database Migrations Not Applied~~
+- **Resolved**: Baseline migration created at `prisma/migrations/0001_initial_schema/` and marked as applied. Future schema changes use `prisma migrate dev` / `prisma migrate deploy`.
+
+### ~~AUTH_SECRET Must Be Changed~~
+- **Resolved**: A secure secret is set in `.env`. Production deployment should generate a new one.
+
+### ~~No Email Delivery~~
+- **Resolved**: Email delivery wired into estimate sending, invoice sending, collections automation, and password reset via Resend.
+
+### ~~No Password Reset Flow~~
+- **Resolved**: Full forgot-password → email → reset-password flow implemented and working.
+
+### ~~No Customer Edit/Delete~~
+- **Resolved**: Customer edit page and soft-delete (with `deletedAt` field) implemented. Deleted customers are hidden from all listings.
+
+### ~~No CI/CD Pipeline~~
+- **Resolved**: GitHub Actions workflow at `.github/workflows/ci.yml` runs type-check, build, and tests on push/PR to main.
+
+### ~~No Automated Tests~~
+- **Resolved**: Vitest test suite with 24 tests covering validation schemas (customer, estimate, invoice) and portal utilities.
 
 ## Non-Blockers (Accept for Beta)
-
-### No Automated Tests
-- **Risk**: Medium
-- **Status**: No unit, integration, or e2e tests exist. Manual QA checklist is provided.
-- **Recommendation**: Add critical-path tests post-launch using Vitest for unit tests and Playwright for e2e.
-
-### No CI/CD Pipeline
-- **Risk**: Medium
-- **Status**: No GitHub Actions, Vercel CI, or other build pipeline configured.
-- **Recommendation**: Add build + type-check step to prevent broken deploys.
 
 ### Invoice Number Race Condition
 - **Risk**: Low (single-user MVP)
 - **Status**: Invoice and estimate numbers generated via `count + 1` which could race under concurrent requests.
 - **Recommendation**: Acceptable for single-user beta. Switch to database sequence or atomic increment for scale.
 
-### No Email Delivery
-- **Risk**: Medium
-- **Status**: No outbound email for estimate/invoice sending, password reset, or collections reminders. Status changes are recorded but no emails are sent.
-- **Recommendation**: Add Resend or Postmark integration post-launch.
-
-### No Password Reset Flow
-- **Risk**: Medium
-- **Status**: Users can create accounts with email/password but cannot reset forgotten passwords.
-- **Recommendation**: Add password reset via email token post-launch.
-
 ### Portal Tokens Not Rate-Limited
 - **Risk**: Low
-- **Status**: Portal token validation has no rate limiting. A brute-force attack on 64-character hex tokens is computationally infeasible but rate limiting would be defense in depth.
+- **Status**: Portal token validation has no rate limiting. Brute-force on 64-character hex tokens is computationally infeasible but rate limiting would be defense in depth.
 - **Recommendation**: Add rate limiting to portal routes if traffic warrants it.
 
 ### Accounting Sync Is Placeholder
 - **Risk**: Low
-- **Status**: Accounting sync creates local tracking records but does not call real QuickBooks/Xero APIs. No OAuth flow with provider.
+- **Status**: Accounting sync creates local tracking records but does not call real QuickBooks/Xero APIs.
 - **Recommendation**: Implement real provider API integration when a customer needs it.
 
-### Collections Automation Is Internal Only
+### No Pagination on List Pages
 - **Risk**: Low
-- **Status**: Collections creates internal records but does not send emails or SMS. Requires external cron to run.
-- **Recommendation**: Add email delivery for collection reminders post-launch.
+- **Status**: Customer, job, estimate, and invoice lists load all records. Fine for beta.
+- **Recommendation**: Add pagination when any list exceeds ~100 records.
 
-### No Customer Edit/Delete
+### No Search/Filter
 - **Risk**: Low
-- **Status**: Customers can be created and viewed but not edited or deleted.
-- **Recommendation**: Add edit functionality. Delete should be soft-delete due to invoice/job dependencies.
-
-### Single Organization Per User
-- **Risk**: Low
-- **Status**: Users can only belong to one organization. No team invite flow exists.
-- **Recommendation**: Add team invites when multi-user orgs are needed.
+- **Status**: No search or filter functionality on list pages.
+- **Recommendation**: Add as usage grows and users need to find specific records.
 
 ### No IP Address in Audit Logs
 - **Risk**: Low
 - **Status**: Audit log model accepts `ipAddress` but server actions don't capture it.
 - **Recommendation**: Extract from request headers in middleware if needed.
+
+### Single Organization Per User
+- **Risk**: Low
+- **Status**: Users can only belong to one organization. Team invite flow exists but is basic.
+- **Recommendation**: Sufficient for target market (1-5 technician shops).
 
 ## Architecture Notes
 
@@ -87,13 +85,14 @@ Honest assessment of the current implementation state as of the completion of Fe
 - Security headers via middleware
 - Portal token-based access with expiration and revocation
 - AI draft with graceful fallback when no API key configured
+- Email delivery for estimates, invoices, collections, and password reset
+- Soft-delete for customers preserving referential integrity
+- CI/CD pipeline with type-check, build, and test
+- Proper migration history for database schema
 
-### What Needs Work Post-Launch
-- Email delivery for notifications
-- Automated test suite
-- CI/CD pipeline
-- Real accounting provider integration
-- Team invites and role management
-- Customer edit/delete
-- Pagination on list pages
-- Search/filter functionality
+### Post-Launch Improvements
+- Real accounting provider integration (QuickBooks/Xero)
+- Pagination and search on list pages
+- Rate limiting on portal and auth routes
+- File upload for proof-of-work photos
+- SMS notifications for collections
