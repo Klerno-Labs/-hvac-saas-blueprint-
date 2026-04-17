@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { isSubscriptionActive } from '@/lib/billing'
 
 /**
  * Returns the current authenticated user and their organization context.
@@ -32,6 +33,25 @@ export async function requireAuth() {
     organization: membership.organization,
     role: membership.role,
   }
+}
+
+/**
+ * Wraps requireAuth() and additionally checks that the organization has an
+ * active subscription (or is within the trial window).  If the subscription
+ * is inactive the user is redirected to /settings/billing so they can upgrade.
+ *
+ * Use this on pages that should be gated behind an active subscription
+ * (dashboard, customers, jobs, estimates, invoices, reminders, reports).
+ * Do NOT use on /settings pages — those should remain accessible.
+ */
+export async function requireActiveSubscription() {
+  const ctx = await requireAuth()
+
+  if (!isSubscriptionActive(ctx.organization)) {
+    redirect('/settings/billing')
+  }
+
+  return ctx
 }
 
 /**

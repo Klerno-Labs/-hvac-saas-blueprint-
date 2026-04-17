@@ -15,6 +15,7 @@ export async function updateCollectionsPolicy(input: {
   collectionsOverdue1Days: number
   collectionsOverdue2Days: number
   collectionsFinalDays: number
+  smsEnabled?: boolean
 }): Promise<ActionResult> {
   const adminResult = await requireAdmin()
   if (!adminResult.authorized) {
@@ -37,6 +38,7 @@ export async function updateCollectionsPolicy(input: {
       collectionsOverdue1Days: data.collectionsOverdue1Days,
       collectionsOverdue2Days: data.collectionsOverdue2Days,
       collectionsFinalDays: data.collectionsFinalDays,
+      ...(data.smsEnabled !== undefined && { smsEnabled: data.smsEnabled }),
     },
   })
 

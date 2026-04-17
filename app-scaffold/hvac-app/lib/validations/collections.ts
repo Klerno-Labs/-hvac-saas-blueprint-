@@ -11,6 +11,7 @@ export const updateCollectionsPolicySchema = z.object({
   collectionsOverdue1Days: z.number().int().min(1).max(90),
   collectionsOverdue2Days: z.number().int().min(2).max(120),
   collectionsFinalDays: z.number().int().min(3).max(180),
+  smsEnabled: z.boolean().optional(),
 }).refine(
   (data) => data.collectionsOverdue2Days > data.collectionsOverdue1Days,
   { message: 'Second reminder must be after first reminder', path: ['collectionsOverdue2Days'] },

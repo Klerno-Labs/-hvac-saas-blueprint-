@@ -45,7 +45,7 @@ export default function NewCustomerPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First name *</Label>
                 <Input id="firstName" name="firstName" required />
@@ -59,7 +59,7 @@ export default function NewCustomerPage() {
               <Label htmlFor="companyName">Company name</Label>
               <Input id="companyName" name="companyName" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone *</Label>
                 <Input id="phone" name="phone" type="tel" required placeholder="(555) 555-5555" />
@@ -80,8 +80,8 @@ export default function NewCustomerPage() {
               <Label htmlFor="addressLine2">Address line 2</Label>
               <Input id="addressLine2" name="addressLine2" />
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2 col-span-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2 sm:col-span-1">
                 <Label htmlFor="city">City</Label>
                 <Input id="city" name="city" />
               </div>

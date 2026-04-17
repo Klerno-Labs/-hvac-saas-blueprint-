@@ -1,6 +1,7 @@
 import { db } from '@/lib/db'
 import { trackEvent } from '@/lib/events'
 import { sendCollectionEmail } from '@/lib/email'
+import { sendCollectionSms } from '@/lib/sms'
 import { getOrCreatePortalUrl } from '@/lib/portal'
 import { COLLECTION_STAGES, type CollectionStage } from '@/lib/validations/collections'
 
@@ -26,6 +27,8 @@ export async function runCollectionsAutomation(): Promise<RunResult> {
     where: { collectionsEnabled: true },
     select: {
       id: true,
+      name: true,
+      smsEnabled: true,
       collectionsOverdue1Days: true,
       collectionsOverdue2Days: true,
       collectionsFinalDays: true,
@@ -85,16 +88,31 @@ export async function runCollectionsAutomation(): Promise<RunResult> {
 
             // Send collection email to customer
             const customerEmail = invoice.customer.email
+            const customerName = [invoice.customer.firstName, invoice.customer.lastName].filter(Boolean).join(' ')
+            const totalFormatted = '$' + (invoice.outstandingCents / 100).toFixed(2)
+
             if (customerEmail) {
               const portalUrl = await getOrCreatePortalUrl(org.id, invoice.customer.id)
               await sendCollectionEmail({
                 to: customerEmail,
-                customerName: [invoice.customer.firstName, invoice.customer.lastName].filter(Boolean).join(' '),
+                customerName,
                 invoiceNumber: invoice.invoiceNumber,
-                totalFormatted: '$' + (invoice.outstandingCents / 100).toFixed(2),
-                orgName: (await db.organization.findUniqueOrThrow({ where: { id: org.id } })).name,
+                totalFormatted,
+                orgName: org.name,
                 portalUrl,
                 dueDate: invoice.dueDate?.toLocaleDateString(),
+                stage,
+              })
+            }
+
+            // Send SMS if enabled and customer has a phone number
+            if (org.smsEnabled && invoice.customer.phone) {
+              await sendCollectionSms({
+                to: invoice.customer.phone,
+                customerName,
+                invoiceNumber: invoice.invoiceNumber,
+                totalFormatted,
+                orgName: org.name,
                 stage,
               })
             }

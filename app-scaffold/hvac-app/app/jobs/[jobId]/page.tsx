@@ -1,25 +1,43 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { JobStatusForm } from './status-form'
+import { PartsUsedSection } from './parts-used'
+import { ReviewSection } from './review-section'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export default async function JobDetailPage({ params }: { params: Promise<{ jobId: string }> }) {
-  const { organizationId } = await requireAuth()
+  const { organizationId } = await requireActiveSubscription()
   const { jobId } = await params
 
-  const job = await db.job.findFirst({
-    where: { id: jobId, organizationId },
-    include: {
-      customer: true,
-      estimates: { orderBy: { createdAt: 'desc' } },
-      invoices: { orderBy: { createdAt: 'desc' } },
-    },
-  })
+  const [job, inventoryItems, existingReview] = await Promise.all([
+    db.job.findFirst({
+      where: { id: jobId, organizationId },
+      include: {
+        customer: true,
+        estimates: { orderBy: { createdAt: 'desc' } },
+        invoices: { orderBy: { createdAt: 'desc' } },
+        assets: { orderBy: { createdAt: 'asc' } },
+        inventoryUsages: {
+          orderBy: { createdAt: 'desc' },
+          include: { inventoryItem: true },
+        },
+      },
+    }),
+    db.inventoryItem.findMany({
+      where: { organizationId },
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, sku: true, quantityOnHand: true },
+    }),
+    db.customerReview.findUnique({
+      where: { jobId },
+      select: { rating: true, comment: true, submittedAt: true, token: true },
+    }),
+  ])
 
   if (!job) {
     notFound()
@@ -45,7 +63,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
           <Badge variant={statusVariant(job.status)}>{job.status.replace('_', ' ')}</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-muted-foreground">Scheduled</p>
               <p className="text-sm font-medium">{job.scheduledFor ? new Date(job.scheduledFor).toLocaleDateString() : '—'}</p>
@@ -108,6 +126,39 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
           </CardContent>
         </Card>
       )}
+
+      {/* Proof-of-work photos */}
+      {job.assets.length > 0 && (
+        <Card className="mb-4">
+          <CardContent className="pt-4">
+            <p className="text-xs text-muted-foreground mb-2">Photos ({job.assets.length})</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {job.assets.map((asset) => (
+                <a
+                  key={asset.id}
+                  href={asset.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative aspect-square rounded-lg overflow-hidden border bg-muted block"
+                >
+                  <img
+                    src={asset.fileUrl}
+                    alt="Proof of work"
+                    className="object-cover w-full h-full hover:opacity-90 transition-opacity"
+                  />
+                </a>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Parts used section */}
+      <PartsUsedSection
+        jobId={job.id}
+        usages={job.inventoryUsages}
+        inventoryItems={inventoryItems}
+      />
 
       {/* Estimates section */}
       <div className="flex justify-between items-center mb-3">
@@ -179,6 +230,22 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
           ))}
         </div>
       )}
+
+      {/* Customer review section */}
+      <ReviewSection
+        jobId={job.id}
+        jobStatus={job.status}
+        existingReview={
+          existingReview
+            ? {
+                rating: existingReview.rating,
+                comment: existingReview.comment,
+                submittedAt: existingReview.submittedAt?.toISOString() ?? null,
+                token: existingReview.token,
+              }
+            : null
+        }
+      />
 
       <Card>
         <CardHeader>

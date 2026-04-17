@@ -12,16 +12,21 @@ export function CollectionsSettingsSection({
   initialOverdue1Days,
   initialOverdue2Days,
   initialFinalDays,
+  initialSmsEnabled,
+  twilioConfigured,
 }: {
   initialEnabled: boolean
   initialOverdue1Days: number
   initialOverdue2Days: number
   initialFinalDays: number
+  initialSmsEnabled: boolean
+  twilioConfigured: boolean
 }) {
   const [enabled, setEnabled] = useState(initialEnabled)
   const [overdue1Days, setOverdue1Days] = useState(initialOverdue1Days)
   const [overdue2Days, setOverdue2Days] = useState(initialOverdue2Days)
   const [finalDays, setFinalDays] = useState(initialFinalDays)
+  const [smsEnabled, setSmsEnabled] = useState(initialSmsEnabled)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -36,6 +41,7 @@ export function CollectionsSettingsSection({
       collectionsOverdue1Days: overdue1Days,
       collectionsOverdue2Days: overdue2Days,
       collectionsFinalDays: finalDays,
+      smsEnabled,
     })
 
     if (result.success) {
@@ -112,6 +118,20 @@ export function CollectionsSettingsSection({
                 <span className="text-[11px] text-muted-foreground">days overdue</span>
               </div>
             </div>
+
+            {twilioConfigured && (
+              <Label className="cursor-pointer mt-2">
+                <input
+                  type="checkbox"
+                  checked={smsEnabled}
+                  onChange={(e) => setSmsEnabled(e.target.checked)}
+                  className="size-4.5"
+                />
+                <span className="text-sm font-medium">
+                  Send SMS reminders to customers with a phone number
+                </span>
+              </Label>
+            )}
           </div>
         )}
 

@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -6,12 +6,12 @@ import { ProofOfWorkForm } from './form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function ProofOfWorkPage({ params }: { params: Promise<{ jobId: string }> }) {
-  const { organizationId } = await requireAuth()
+  const { organizationId } = await requireActiveSubscription()
   const { jobId } = await params
 
   const job = await db.job.findFirst({
     where: { id: jobId, organizationId },
-    include: { customer: true },
+    include: { customer: true, assets: { orderBy: { createdAt: 'asc' } } },
   })
 
   if (!job) {
@@ -47,6 +47,11 @@ export default async function ProofOfWorkPage({ params }: { params: Promise<{ jo
               completionNotes: job.completionNotes || '',
               technicianName: job.technicianName || '',
             }}
+            existingAssets={job.assets.map((a) => ({
+              id: a.id,
+              fileUrl: a.fileUrl,
+              fileType: a.fileType,
+            }))}
           />
         </CardContent>
       </Card>

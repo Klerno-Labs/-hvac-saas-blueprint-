@@ -1,11 +1,11 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 export default async function ReportsPage() {
-  const { organizationId, organization } = await requireAuth()
+  const { organizationId, organization } = await requireActiveSubscription()
 
   const [
     totalInvoicedResult,
@@ -162,7 +162,7 @@ export default async function ReportsPage() {
         <Card>
           <CardHeader><CardTitle className="text-lg">Accounting sync status</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div><p className="text-xs text-muted-foreground">Provider</p><p className="text-sm font-semibold">{organization.accountingProvider || '—'}</p></div>
               <div><p className="text-xs text-muted-foreground">Synced</p><p className="text-sm font-semibold text-emerald-600">{syncSummary['synced'] || 0}</p></div>
               <div><p className="text-xs text-muted-foreground">Pending</p><p className="text-sm font-semibold text-amber-600">{syncSummary['pending'] || 0}</p></div>

@@ -49,6 +49,9 @@ export async function createOrganization(formData: FormData): Promise<Onboarding
 
   // Create organization + owner membership in a transaction
   const organization = await db.$transaction(async (tx) => {
+    const trialEndsAt = new Date()
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14)
+
     const org = await tx.organization.create({
       data: {
         name,
@@ -56,6 +59,7 @@ export async function createOrganization(formData: FormData): Promise<Onboarding
         email: email || null,
         timezone: timezone || null,
         onboardingStatus: 'completed',
+        trialEndsAt,
       },
     })
 

@@ -56,7 +56,7 @@ export function EditCustomerForm({ customer }: { customer: Customer }) {
         {error && <div className="text-sm text-destructive mb-4 p-3 bg-destructive/10 rounded-lg">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First name *</Label>
               <Input id="firstName" name="firstName" required defaultValue={customer.firstName} />
@@ -70,7 +70,7 @@ export function EditCustomerForm({ customer }: { customer: Customer }) {
             <Label htmlFor="companyName">Company name</Label>
             <Input id="companyName" name="companyName" defaultValue={customer.companyName || ''} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone *</Label>
               <Input id="phone" name="phone" type="tel" required defaultValue={customer.phone || ''} />
@@ -89,7 +89,7 @@ export function EditCustomerForm({ customer }: { customer: Customer }) {
             <Label htmlFor="addressLine2">Address line 2</Label>
             <Input id="addressLine2" name="addressLine2" defaultValue={customer.addressLine2 || ''} />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
               <Input id="city" name="city" defaultValue={customer.city || ''} />

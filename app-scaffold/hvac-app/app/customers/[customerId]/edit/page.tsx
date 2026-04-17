@@ -1,10 +1,10 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import { EditCustomerForm } from './form'
 
 export default async function EditCustomerPage({ params }: { params: Promise<{ customerId: string }> }) {
-  const { organizationId } = await requireAuth()
+  const { organizationId } = await requireActiveSubscription()
   const { customerId } = await params
 
   const customer = await db.customer.findFirst({

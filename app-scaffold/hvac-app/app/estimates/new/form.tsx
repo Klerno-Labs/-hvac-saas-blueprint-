@@ -214,7 +214,7 @@ export function EstimateForm({ jobId, jobTitle }: { jobId: string; jobTitle: str
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <Label className="text-sm font-medium">Tax ($)</Label>
             <Input

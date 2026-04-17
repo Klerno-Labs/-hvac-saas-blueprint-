@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import Link from 'next/link'
 import { StripeConnectSection } from './stripe-connect'
 import { CollectionsSettingsSection } from './collections-settings'
+import { isTwilioConfigured } from '@/lib/sms'
 import { AccountingSettingsSection } from './accounting-settings'
 import { TeamSection } from './team-section'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -52,6 +53,8 @@ export default async function SettingsPage() {
         initialOverdue1Days={organization.collectionsOverdue1Days}
         initialOverdue2Days={organization.collectionsOverdue2Days}
         initialFinalDays={organization.collectionsFinalDays}
+        initialSmsEnabled={organization.smsEnabled}
+        twilioConfigured={isTwilioConfigured()}
       />
 
       <AccountingSettingsSection

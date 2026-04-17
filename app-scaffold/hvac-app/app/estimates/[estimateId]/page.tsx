@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge'
 
 export default async function EstimateDetailPage({ params }: { params: Promise<{ estimateId: string }> }) {
-  const { organizationId } = await requireAuth()
+  const { organizationId } = await requireActiveSubscription()
   const { estimateId } = await params
 
   const estimate = await db.estimate.findFirst({
@@ -59,7 +59,7 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-muted-foreground">Subtotal</p>
               <p>{formatCents(estimate.subtotalCents)}</p>

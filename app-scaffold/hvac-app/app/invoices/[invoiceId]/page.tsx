@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ invoiceId: string }> }) {
-  const { organizationId, organization } = await requireAuth()
+  const { organizationId, organization } = await requireActiveSubscription()
   const { invoiceId } = await params
 
   const invoice = await db.invoice.findFirst({
@@ -54,7 +54,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <Badge variant={invoiceVariant(invoice.status)}>{invoice.status}</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
               <p className="text-xs text-muted-foreground">Subtotal</p>
               <p className="text-sm font-medium">{formatCents(invoice.subtotalCents)}</p>

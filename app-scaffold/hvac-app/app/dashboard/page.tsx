@@ -1,11 +1,11 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 export default async function DashboardPage() {
-  const { organization, organizationId } = await requireAuth()
+  const { organization, organizationId } = await requireActiveSubscription()
 
   const [
     customerCount,

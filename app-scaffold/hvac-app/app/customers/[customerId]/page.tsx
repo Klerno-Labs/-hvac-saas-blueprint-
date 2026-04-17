@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -10,7 +10,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ customerId: string }> }) {
-  const { organizationId } = await requireAuth()
+  const { organizationId } = await requireActiveSubscription()
   const { customerId } = await params
 
   const customer = await db.customer.findFirst({
@@ -41,7 +41,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           </Link>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-muted-foreground">Phone</p>
               <p className="text-sm font-medium">{customer.phone || '—'}</p>

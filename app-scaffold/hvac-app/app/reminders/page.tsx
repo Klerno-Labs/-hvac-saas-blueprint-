@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/session'
+import { requireActiveSubscription } from '@/lib/session'
 import { db } from '@/lib/db'
 import Link from 'next/link'
 import { ReminderStatusForm } from './status-form'
@@ -8,7 +8,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export default async function RemindersPage() {
-  const { organizationId } = await requireAuth()
+  const { organizationId } = await requireActiveSubscription()
 
   const reminders = await db.reminder.findMany({
     where: { organizationId },
