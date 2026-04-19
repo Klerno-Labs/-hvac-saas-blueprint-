@@ -79,6 +79,9 @@ export const metadata: Metadata = {
   category: 'business software',
   verification: {
     google: 'SRi7UiAJOXVpe8bFWXO4ufcDfSY6YtTht7GC-wcwoPk',
+    other: {
+      'msvalidate.01': '86C439B0183EE3B27344DCE5D0FCE723',
+    },
   },
 }
 
