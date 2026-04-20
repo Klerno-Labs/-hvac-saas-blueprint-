@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { ApprovalSection } from './approval-section'
 
 export default async function PortalEstimateDetailPage({
   params,
@@ -39,6 +40,9 @@ export default async function PortalEstimateDetailPage({
       taxCents: true,
       totalCents: true,
       sentAt: true,
+      acceptedAt: true,
+      declinedAt: true,
+      decisionByName: true,
       lineItems: {
         select: { id: true, name: true, description: true, quantity: true, unitPriceCents: true, lineTotalCents: true },
         orderBy: { sortOrder: 'asc' },
@@ -50,6 +54,12 @@ export default async function PortalEstimateDetailPage({
   if (!estimate) {
     notFound()
   }
+
+  // Stamp viewedAt the first time customer opens it (don't overwrite later views)
+  await db.estimate.updateMany({
+    where: { id: estimateId, viewedAt: null },
+    data: { viewedAt: new Date() },
+  })
 
   await trackEvent({
     organizationId: ctx.organizationId,
@@ -148,6 +158,17 @@ export default async function PortalEstimateDetailPage({
             )}
           </CardContent>
         </Card>
+
+        <div className="mt-4">
+          <ApprovalSection
+            token={token}
+            estimateId={estimate.id}
+            status={estimate.status}
+            decisionByName={estimate.decisionByName}
+            acceptedAt={estimate.acceptedAt}
+            declinedAt={estimate.declinedAt}
+          />
+        </div>
 
         <div className="text-center mt-4">
           <a href={`/api/estimates/${estimate.id}/pdf?token=${token}`} className={cn(buttonVariants({ variant: 'outline' }), 'no-underline')}>

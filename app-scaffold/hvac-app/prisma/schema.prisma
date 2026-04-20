@@ -115,6 +115,8 @@ model Organization {
   reviews                  CustomerReview[]
   inventoryItems           InventoryItem[]
   inventoryUsages          InventoryUsage[]
+  equipment                Equipment[]
+  equipmentServiceRecords  EquipmentServiceRecord[]
   createdAt                DateTime             @default(now())
   updatedAt                DateTime             @updatedAt
 }
@@ -169,6 +171,7 @@ model Customer {
   portalTokens   PortalToken[]
   recurringJobs  RecurringJob[]
   reviews        CustomerReview[]
+  equipment      Equipment[]
   deletedAt      DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -213,6 +216,7 @@ model Job {
   signatures      JobSignature[]
   reviews         CustomerReview[]
   inventoryUsages InventoryUsage[]
+  equipmentServiceRecords EquipmentServiceRecord[]
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
@@ -234,7 +238,13 @@ model Estimate {
   totalCents     Int                @default(0)
   aiDraftUsed    Boolean            @default(false)
   sentAt         DateTime?
+  viewedAt       DateTime?
   acceptedAt     DateTime?
+  declinedAt     DateTime?
+  decisionByName String?
+  decisionByIp   String?
+  signatureDataUrl String?
+  declineReason  String?
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   job            Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
   lineItems      EstimateLineItem[]
@@ -504,4 +514,55 @@ model InventoryUsage {
   @@index([organizationId])
   @@index([jobId])
   @@index([inventoryItemId])
+}
+
+model Equipment {
+  id                  String                   @id @default(cuid())
+  organizationId      String
+  customerId          String
+  type                String                   // ac_condenser|furnace|heat_pump|mini_split|boiler|water_heater|thermostat|air_handler|ductwork|other
+  make                String?
+  model               String?
+  serial              String?
+  installDate         DateTime?
+  installedByUs       Boolean                  @default(false)
+  installerName       String?
+  tonnage             Float?
+  seer                Float?
+  refrigerantType     String?
+  btu                 Int?
+  locationOnProperty  String?
+  warrantyStartDate   DateTime?
+  partsWarrantyMonths Int?
+  laborWarrantyMonths Int?
+  lastServicedAt      DateTime?
+  nextServiceDueAt    DateTime?
+  status              String                   @default("active") // active|retired
+  notes               String?
+  organization        Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer            Customer                 @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  serviceRecords      EquipmentServiceRecord[]
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  @@index([organizationId])
+  @@index([customerId])
+}
+
+model EquipmentServiceRecord {
+  id              String       @id @default(cuid())
+  organizationId  String
+  equipmentId     String
+  jobId           String?
+  serviceType     String       // tune-up|repair|install|inspection|warranty|other
+  description     String?
+  performedAt     DateTime
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  equipment       Equipment    @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  job             Job?         @relation(fields: [jobId], references: [id])
+  createdAt       DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([equipmentId])
+  @@index([jobId])
 }

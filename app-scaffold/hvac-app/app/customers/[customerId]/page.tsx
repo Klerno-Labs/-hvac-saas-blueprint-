@@ -17,6 +17,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
     where: { id: customerId, organizationId, deletedAt: null },
     include: {
       jobs: { orderBy: { createdAt: 'desc' }, take: 20 },
+      equipment: { orderBy: { createdAt: 'desc' } },
     },
   })
 
@@ -72,6 +73,45 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           )}
         </CardContent>
       </Card>
+
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-lg font-semibold">Equipment</h2>
+        <Link href={`/customers/${customer.id}/equipment/new` as never} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'no-underline')}>
+          + Add equipment
+        </Link>
+      </div>
+
+      {customer.equipment.length === 0 ? (
+        <Card className="mb-6">
+          <CardContent className="py-6 text-center">
+            <p className="text-sm text-muted-foreground">No equipment recorded. Track HVAC units to enable service history and warranty tracking.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-2 mb-6">
+          {customer.equipment.map((eq) => {
+            const title = [eq.make, eq.model].filter(Boolean).join(' ') || eq.type
+            return (
+              <Link key={eq.id} href={`/customers/${customer.id}/equipment/${eq.id}` as never} className="no-underline text-inherit">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardContent className="py-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-medium text-sm">{title}</span>
+                        {eq.serial && <span className="text-xs text-muted-foreground ml-2">SN: {eq.serial}</span>}
+                      </div>
+                      <Badge variant="outline" className="text-xs">{eq.type.replace('_', ' ')}</Badge>
+                    </div>
+                    {eq.locationOnProperty && (
+                      <p className="text-xs text-muted-foreground mt-1">{eq.locationOnProperty}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            )
+          })}
+        </div>
+      )}
 
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-semibold">Jobs</h2>
