@@ -143,6 +143,29 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     entityType: 'invoice',
     entityId: invoiceId,
   })
+
+  // Fire-and-forget: emit `order.ingest` to Robert for satellite revenue
+  // attribution. Robert outages must never affect this webhook's 2xx reply
+  // to Stripe, so failures are swallowed and the fetch is not awaited.
+  const appUrl = process.env.APP_URL
+  const customerId =
+    typeof session.customer === 'string'
+      ? session.customer
+      : session.customer?.id ?? ''
+  if (appUrl && customerId) {
+    void fetch(`${appUrl}/api/internal/order-ingest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        stripeInvoiceId: invoiceId,
+        customerId,
+        amountPaid: session.amount_total ?? invoice.totalCents,
+        currency: session.currency ?? 'usd',
+        planId: session.metadata?.planId ?? undefined,
+      }),
+      keepalive: true,
+    }).catch(() => null)
+  }
 }
 
 async function handleCheckoutExpired(session: Stripe.Checkout.Session) {

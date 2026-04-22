@@ -25,6 +25,23 @@ function SignupInner() {
     const result = await signup(formData)
 
     if (result.success) {
+      // Fire-and-forget: emit signed `lead.ingest` event to Robert.
+      // Must run AFTER signup() has persisted the user so we never
+      // attribute a lead that was actually a validation failure. Robert
+      // failures are swallowed so the login redirect is never blocked.
+      const email = formData.get('email')
+      if (typeof email === 'string' && email.length > 0) {
+        void fetch('/api/internal/lead-ingest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            plan: 'trial',
+            source: 'fieldclose.com/signup',
+          }),
+          keepalive: true,
+        }).catch(() => null)
+      }
       router.push('/login?registered=true')
     } else {
       setError(result.error)
