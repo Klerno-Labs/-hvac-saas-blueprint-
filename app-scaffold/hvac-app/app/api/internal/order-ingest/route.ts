@@ -58,7 +58,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       amountPaid: parsed.data.amountPaid,
       currency: parsed.data.currency,
       planId: parsed.data.planId ?? "unknown",
-      source: "fieldclose.com/stripe-webhook",
+      source: "fieldclose.app/stripe-webhook",
     },
   });
 

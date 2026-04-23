@@ -37,7 +37,7 @@ function SignupInner() {
           body: JSON.stringify({
             email,
             plan: 'trial',
-            source: 'fieldclose.com/signup',
+            source: 'fieldclose.app/signup',
           }),
           keepalive: true,
         }).catch(() => null)

@@ -47,7 +47,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     payload: {
       email: parsed.data.email,
       plan: parsed.data.plan ?? "trial",
-      source: parsed.data.source ?? "fieldclose.com/signup",
+      source: parsed.data.source ?? "fieldclose.app/signup",
     },
   });
 
